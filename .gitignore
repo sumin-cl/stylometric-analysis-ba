@@ -1,3 +1,8 @@
 venv/
 __pycache__/
 *.pyc
+data/
+archive/
+src/deprecated/
+*.csv
+r_machinelearning_posts.jsonl
