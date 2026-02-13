@@ -1,0 +1,6 @@
+﻿00*: data-extraction
+01*: preprocessing
+02*: statistical info
+03*: data analysis (mtld, shannon, parse tree depth, function word ratio)
+
+
