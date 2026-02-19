@@ -153,3 +153,47 @@ def calculate_fwr_per_doc(df_series):
         ratios.append(ratio)
         
     return ratios
+
+import os, json
+from datetime import datetime
+
+def save_as_json(filename, metadata, results):
+    """
+    Speichert Analyse-Ergebnisse als JSON in data/final/results/.
+    filename: Name der Datei (z.B. 'entropy_results.json')
+    metadata: Dictionary mit Infos (sample_size, corpus_names, etc.)
+    results: Dictionary mit den Messwerten
+    """
+    output_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data', 'final', 'results'))
+    os.makedirs(output_dir, exist_ok=True)
+    
+    full_data = {
+        "timestamp": datetime.now().isoformat(),
+        "metadata": metadata,
+        "results": results
+    }
+    
+    target_path = os.path.join(output_dir, filename)
+    with open(target_path, "w", encoding="utf-8") as f:
+        json.dump(full_data, f, indent=4)
+    
+    print(f"\n[EXPORT] Ergebnisse gesichert in: {target_path}")
+
+def append_to_json(filename, new_results):
+    """
+    Öffnet eine bestehende JSON-Datei in data/final/results/,
+    merged neue Ergebnisse hinein und speichert sie wieder.
+    """
+    output_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data', 'final', 'results'))
+    target_path = os.path.join(output_dir, filename)
+
+    with open(target_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    data["results"].update(new_results)
+    data["results"]["updated_at"] = datetime.now().isoformat()
+
+    with open(target_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+
+    print(f"[APPEND] Mann-Whitney-U wurde hinzugefügt zu: {target_path}")

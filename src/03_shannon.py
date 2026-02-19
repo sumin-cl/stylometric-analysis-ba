@@ -24,10 +24,11 @@ def analyze_entropy(mode="WORD"):
     print(f"Entropie A ({mode}): {entropy_a:.4f}")
     print(f"Entropie B ({mode}): {entropy_b:.4f}")
     
-    # 3. Intersection / Filterung
-    print(f"Filtere B basierend auf A (Intersection)...")
-    list_b_filtered = filter_list_by_reference(list_b, list_a, min_freq=1) 
-    
+    # 3. Alignment / Filterung
+    print("Filtere B basierend auf A (einseitiges Alignment)...")
+    min_freq = 3 if mode == "WORD" else 1
+    list_b_filtered = filter_list_by_reference(list_b, list_a, min_freq=min_freq)
+        
     entropy_b_filt = calculate_shannon_entropy(list_b_filtered)
     print(f"Entropie B (Filtered): {entropy_b_filt:.4f}")
     
@@ -37,6 +38,20 @@ def analyze_entropy(mode="WORD"):
     
     print(f"Differenz (Raw): {diff_raw:.4f}")
     print(f"Differenz (Bereinigt): {diff_filt:.4f}")
+
+    meta = {
+        "sample_size": size,
+        "mode": mode,
+        "source_files": ["data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv"]
+    }
+    res = {
+        "entropy_a": entropy_a,
+        "entropy_b": entropy_b,
+        "diff_entropy_raw": diff_raw,
+        "diff_entropy_filtered": diff_filt
+    }
+    from nlp_utils import save_as_json
+    save_as_json(f"entropy_{mode.lower()}.json", meta, res)
 
 if __name__ == "__main__":
     analyze_entropy(mode="WORD")

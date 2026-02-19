@@ -44,6 +44,19 @@ def run_syntax_analysis():
     else:
         print(">> Hypothese abgelehnt: Sätze werden tiefer verschachtelt.")
 
+    meta = {
+        "sample_size": min_len,
+        "mode": "parse_tree_depth",
+        "source_files": ["data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv"]
+    }
+    res = {
+        "mean_ptd_a": mean_a,
+        "mean_ptd_b": mean_b,
+        "diff_ptd": mean_b - mean_a
+    }
+    from .nlp_utils import save_as_json
+    save_as_json(f"syntax_parse_depth.json", meta, res)
+
     return depths_a, depths_b
 
 # src/03_mannwhitney.py
@@ -67,6 +80,16 @@ def run_significance_test(depths_a, depths_b):
 
     mean_diff = np.mean(depths_a) - np.mean(depths_b)
     print(f"Absolute Differenz der Mittelwerte: {mean_diff:.4f}")
+    from .nlp_utils import append_to_json
+
+    append_to_json(
+        "syntax_parse_depth.json",
+        {
+            "mann_whitney_u": float(stat),
+            "p_value": float(p_val),
+            "effect_size_r": abs(stat) / (len(depths_a) * len(depths_b))**0.5
+        }
+    )
 
 if __name__ == "__main__":
     depths_a, depths_b = run_syntax_analysis()

@@ -34,5 +34,21 @@ def run_fwr_analysis():
     else:
         print(">> Hypothese abgelehnt: Texte werden dichter.")
 
+    meta = {
+        "sample_size": min_len,
+        "mode": "fwr",
+        "source_files": ["data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv"]
+    }
+    res = {
+        "mean_fwr_a": mean_a,
+        "mean_fwr_b": mean_b,
+        "diff_fwr": diff,
+        # For MWU
+        "std_fwr_a": float(np.std(fwr_a)),
+        "std_fwr_b": float(np.std(fwr_b))
+    }
+    from .nlp_utils import save_as_json
+    save_as_json(f"fwr_results.json", meta, res)
+
 if __name__ == "__main__":
     run_fwr_analysis()
