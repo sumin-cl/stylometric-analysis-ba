@@ -7,8 +7,8 @@ def run_syntax_analysis():
     print("--- SYNTACTIC COMPLEXITY (Parse Tree Depth) ---")
     
     # 1. Laden
-    df_a = pd.read_csv("data/final/corpus_a_clean.csv")
-    df_b = pd.read_csv("data/final/corpus_b_clean.csv")
+    df_a = pd.read_csv("data/final/02_processed/corpus_a_2019_2021.csv")
+    df_b = pd.read_csv("data/final/02_processed/corpus_b_2023_2025.csv")
 
     min_len = min(len(df_a), len(df_b))
     
@@ -54,7 +54,7 @@ def run_syntax_analysis():
         "mean_ptd_b": mean_b,
         "diff_ptd": mean_b - mean_a
     }
-    from .nlp_utils import save_as_json
+    from nlp_utils import save_as_json
     save_as_json(f"syntax_parse_depth.json", meta, res)
 
     return depths_a, depths_b
@@ -80,7 +80,7 @@ def run_significance_test(depths_a, depths_b):
 
     mean_diff = np.mean(depths_a) - np.mean(depths_b)
     print(f"Absolute Differenz der Mittelwerte: {mean_diff:.4f}")
-    from .nlp_utils import append_to_json
+    from nlp_utils import append_to_json
 
     append_to_json(
         "syntax_parse_depth.json",

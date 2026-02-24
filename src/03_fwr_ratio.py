@@ -7,8 +7,8 @@ def run_fwr_analysis():
     print("--- Start FWR-Analyse (Verbosity Check) ---")
     
     # 1. Laden & Sampling
-    df_a = pd.read_csv("data/final/corpus_a_clean.csv")
-    df_b = pd.read_csv("data/final/corpus_b_clean.csv")
+    df_a = pd.read_csv("data/final/02_processed/corpus_a_2019_2021.csv")
+    df_b = pd.read_csv("data/final/02_processed/corpus_b_2023_2025.csv")
     
     min_len = min(len(df_a), len(df_b))
     print(f"Sampling auf {min_len} Posts...")
@@ -47,7 +47,7 @@ def run_fwr_analysis():
         "std_fwr_a": float(np.std(fwr_a)),
         "std_fwr_b": float(np.std(fwr_b))
     }
-    from .nlp_utils import save_as_json
+    from nlp_utils import save_as_json
     save_as_json(f"fwr_results.json", meta, res)
 
 if __name__ == "__main__":
