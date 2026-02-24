@@ -15,7 +15,10 @@ def get_flat_tokens(df_series):
     Nimmt eine Pandas-Serie von Texten und gibt eine flache Liste aller Wörter zurück.
     Lowercased.
     """
-    return " ".join(df_series.astype(str)).lower().split()
+    tokens = [] 
+    for text in tqdm(df_series.astype(str), desc="Tokenisiere Wörter"): 
+        tokens.extend(text.lower().split()) 
+    return tokens
 
 def get_pos_tags(df_series):
     """
@@ -55,7 +58,7 @@ def calculate_shannon_entropy(items):
     total = len(items)
     entropy = 0.0
     
-    for count in counts.values():
+    for count in tqdm(counts.values(), desc="Berechne Entropie"):
         p = count / total
         entropy -= p * math.log2(p)
         
@@ -70,7 +73,7 @@ def filter_list_by_reference(target_list, reference_list, min_freq=3):
     ref_counts = Counter(reference_list)
     valid_vocab = {item for item, count in ref_counts.items() if count >= min_freq}
     
-    filtered = [x for x in target_list if x in valid_vocab]
+    filtered = [x for x in tqdm(target_list, desc="Filtere Tokens nach Referenzvokabular") if x in valid_vocab]
     return filtered
 
 # Für Tree Depth brauchen wir einen Parser
