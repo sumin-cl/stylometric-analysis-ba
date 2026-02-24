@@ -5,12 +5,12 @@ This repository contains the source code for my Bachelor's Thesis in Computation
 
 It provides a reproducible Python pipeline to analyze and compare stylometric features between pre-LLM (2019-2021) and post-LLM (2023-2025) text corpora, alongside synthetic reference data.
 
-## Key Metrics
-The pipeline calculates structural and lexical complexity using:
-*   **Shannon Entropy** (Information density & predictability)
-*   **MTLD** (Measure of Textual Lexical Diversity)
-*   **POS N-grams** (Syntactic patterns)
-*   **Parse Tree Depth** (Grammatical complexity via spaCy)
+## Methodology
+The Python pipeline (`src/`) implements a reproducible workflow to measure lexical and structural complexity using:
+
+*   **Shannon Entropy:** Measuring information density and predictability.
+*   **MTLD (Measure of Textual Lexical Diversity):** Assessing vocabulary richness robust to text length.
+*   **Syntactic Complexity:** Analysis of POS n-grams and Parse Tree Depth via spaCy.
 
 ## Project Structure
 *   `src/`: Contains the core logic for data preprocessing, metric calculation, and statistical analysis.
