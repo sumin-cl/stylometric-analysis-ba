@@ -8,7 +8,7 @@ def analyze_entropy_per_post(df, mode):
         if mode == "WORD":
             tokens = get_flat_tokens(pd.Series([text]), use_tqdm=False)
         else:
-            tokens = get_pos_tags([text])
+            tokens = get_pos_tags(pd.Series([text]))
         entropies.append(calculate_shannon_entropy(tokens))
     return entropies
 

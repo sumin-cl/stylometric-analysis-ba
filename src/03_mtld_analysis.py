@@ -2,8 +2,14 @@
 import pandas as pd
 from collections import Counter
 from lexical_diversity import lex_div as ld
+from tqdm import tqdm
 
-def mtld_analysis():
+def chunk_tokens(tokens, chunk_size=500):
+    """Teilt eine Tokenliste in gleich große Chunks auf."""
+    for i in range(0, len(tokens), chunk_size):
+        yield tokens[i:i + chunk_size]
+
+def mtld_analysis(chunk_size=500):
     """
     Berechnet den MTLD-Wert (Measure of Textual Lexical Diversity) für beide Korpora.
     Zusätzlich wird ein vokabulargefilterter MTLD für Korpus B berechnet, der nur
@@ -46,6 +52,17 @@ def mtld_analysis():
     }
     from nlp_utils import save_as_json
     save_as_json(f"mtld_alignment_results.json", meta, res)
+
+    mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A")]
+    mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B")]
+    mtld_chunks_b_filtered = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b_filtered, chunk_size), desc="MTLD Chunks B (Filtered)")]
+
+    res_chunks = {
+        "mtld_chunks_a": mtld_chunks_a,
+        "mtld_chunks_b": mtld_chunks_b,
+        "mtld_chunks_b_filtered": mtld_chunks_b_filtered
+    }
+    save_as_json(f"mtld_chunks_results.json", meta, res_chunks)
 
 if __name__ == "__main__":
     mtld_analysis()

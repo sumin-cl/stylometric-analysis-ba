@@ -31,6 +31,9 @@ def get_pos_tags(df_series):
     """
     Nimmt eine Pandas-Serie und gibt eine flache Liste aller POS-Tags zurück.
     """
+    if isinstance(df_series, list):
+        df_series = pd.Series(df_series)
+
     print("Extrahiere POS-Tags mit spaCy (das kann kurz dauern)...")
     all_tags = []
     for doc in nlp.pipe(df_series.astype(str), batch_size=100):
