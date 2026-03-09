@@ -10,14 +10,21 @@ try:
 except:
     print("SpaCy Modell nicht gefunden. Bitte: python -m spacy download en_core_web_sm")
 
-def get_flat_tokens(df_series):
+def get_flat_tokens(df_series, use_tqdm=True):
     """
     Nimmt eine Pandas-Serie von Texten und gibt eine flache Liste aller Wörter zurück.
     Lowercased.
     """
-    tokens = [] 
-    for text in tqdm(df_series.astype(str), desc="Tokenisiere Wörter"): 
-        tokens.extend(text.lower().split()) 
+    if isinstance(df_series, list):
+        df_series = pd.Series(df_series)
+
+    iterator = df_series.astype(str)
+    if use_tqdm:
+        iterator = tqdm(iterator, desc="Tokenisiere Wörter")
+
+    tokens = []
+    for text in iterator:
+        tokens.extend(text.lower().split())
     return tokens
 
 def get_pos_tags(df_series):
