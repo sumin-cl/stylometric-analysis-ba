@@ -1,15 +1,19 @@
 import pandas as pd
 import os
-from nlp_utils import nlp # Parser-Funktion in nlp_utils.py
+from nlp_utils import nlp 
 from tqdm import tqdm
 
 def tag_and_save(input_file, output_file):
+    """
+    Führt spaCy-POS-Tagging für alle Posts in input_file durch.
+    Speichert die Tag-Sequenz jedes Posts als leerzeichen-getrennten String
+    in einer neuen Spalte 'pos_tags' und schreibt das Ergebnis nach output_file.
+    """
     print(f"--- Starte Tagging für {input_file} ---")
     df = pd.read_csv(input_file)
     
     pos_tags_list = []
     
-    # nlp.pipe verarbeitet Texte schneller, parser und ner nicht notwendig
     for doc in tqdm(nlp.pipe(df['text'].astype(str), batch_size=100, disable=["parser", "ner"]), total=len(df)):
         tags = " ".join([token.pos_ for token in doc])
         pos_tags_list.append(tags)

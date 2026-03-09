@@ -9,7 +9,6 @@ def analyze_entropy(mode="WORD"):
     print(f"\n=== STARTE ENTROPIE-ANALYSE: {mode} ===")
     df_a, df_b, size = downsample_corpora("data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv")
 
-    # 1. Daten extrahieren
     if mode == "WORD":
         list_a = get_flat_tokens(df_a['text'])
         list_b = get_flat_tokens(df_b['text'])
@@ -17,14 +16,12 @@ def analyze_entropy(mode="WORD"):
         list_a = get_pos_tags(df_a['text'])
         list_b = get_pos_tags(df_b['text'])
     
-    # 2. Basis-Entropie berechnen
     entropy_a = calculate_shannon_entropy(list_a)
     entropy_b = calculate_shannon_entropy(list_b)
     
     print(f"Entropie A ({mode}): {entropy_a:.4f}")
     print(f"Entropie B ({mode}): {entropy_b:.4f}")
     
-    # 3. Alignment / Filterung
     print("Filtere B basierend auf A (einseitiges Alignment)...")
     min_freq = 3 if mode == "WORD" else 1
     list_b_filtered = filter_list_by_reference(list_b, list_a, min_freq=min_freq)
@@ -32,7 +29,6 @@ def analyze_entropy(mode="WORD"):
     entropy_b_filt = calculate_shannon_entropy(list_b_filtered)
     print(f"Entropie B (Filtered): {entropy_b_filt:.4f}")
     
-    # Fazit
     diff_raw = entropy_b - entropy_a
     diff_filt = entropy_b_filt - entropy_a
     

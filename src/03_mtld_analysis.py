@@ -4,23 +4,26 @@ from collections import Counter
 from lexical_diversity import lex_div as ld
 
 def mtld_analysis():
+    """
+    Berechnet den MTLD-Wert (Measure of Textual Lexical Diversity) für beide Korpora.
+    Zusätzlich wird ein vokabulargefilterter MTLD für Korpus B berechnet, der nur
+    Typen enthält, die in Korpus A mindestens 3-mal vorkommen — zur Kontrolle des Topic-Shifts.
+    Speichert alle drei MTLD-Werte und die gefilterte Differenz in mtld_alignment_results.json.
+    """
     df_a = pd.read_csv("data/final/corpus_a_clean.csv")
     df_b = pd.read_csv("data/final/corpus_b_clean.csv")
 
-    # Downsampling für fairen Vergleich
     size = min(len(df_a), len(df_b))
     df_a = df_a.sample(n=size, random_state=42)
     df_b = df_b.sample(n=size, random_state=42)
 
-    # Token-Listen vorbereiten
     tokens_a = " ".join(df_a['text'].astype(str)).lower().split()
     tokens_b = " ".join(df_b['text'].astype(str)).lower().split()
 
-    # 1. Standard MTLD
     mtld_a = ld.mtld(tokens_a)
     mtld_b = ld.mtld(tokens_b)
 
-    # 2. Vocab Intersection (min_freq=3)
+    # min_freq=3 as occurence requirement
     vocab_a = {w for w, c in Counter(tokens_a).items() if c >= 3}
     tokens_b_filtered = [t for t in tokens_b if t in vocab_a]
     mtld_b_filt = ld.mtld(tokens_b_filtered)

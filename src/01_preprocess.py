@@ -4,10 +4,19 @@ from cleanup import clean_reddit_text
 import os
 
 def load_data(path):
+    """
+    Lädt eine CSV- oder JSONL-Datei in einen DataFrame, abhängig von der Dateiendung.
+    """
     if path.endswith('.jsonl'): return pd.read_json(path, lines=True)
     return pd.read_csv(path)
 
 def pipeline(input_path, output_name, is_corpus_b=False):
+    """
+    Vollständige Vorverarbeitungs-Pipeline für eine Korpusdatei.
+    Bereinigt Texte, berechnet Token-Anzahlen und entfernt Posts mit weniger als 30 Tokens.
+    Bei is_corpus_b=True wird das Spaltenformat des Arctic-Shift-Datensatzes angepasst.
+    Speichert das bereinigte Korpus unter data/final/<output_name>.csv.
+    """
     print(f"Verarbeite {input_path}...")
     df = load_data(input_path)
     

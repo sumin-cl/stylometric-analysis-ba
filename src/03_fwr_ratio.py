@@ -4,9 +4,14 @@ import numpy as np
 from nlp_utils import calculate_fwr_per_doc
 
 def run_fwr_analysis():
+    """
+    Berechnet die mittlere Function-Word-Ratio (FWR) pro Dokument für beide Korpora
+    auf Basis von spaCy-POS-Tags.
+    FWR = Anzahl Funktionswörter / Anzahl Inhaltswörter pro Post.
+    Speichert Mittelwerte, Differenz und Standardabweichungen in fwr_results.json.
+    """
     print("--- Start FWR-Analyse (Verbosity Check) ---")
     
-    # 1. Laden & Sampling
     df_a = pd.read_csv("data/final/02_processed/corpus_a_2019_2021.csv")
     df_b = pd.read_csv("data/final/02_processed/corpus_b_2023_2025.csv")
     
@@ -15,11 +20,9 @@ def run_fwr_analysis():
     df_a = df_a.sample(n=min_len, random_state=42)
     df_b = df_b.sample(n=min_len, random_state=42)
 
-    # 2. Berechnung
     fwr_a = calculate_fwr_per_doc(df_a['text'])
     fwr_b = calculate_fwr_per_doc(df_b['text'])
 
-    # 3. Statistik
     mean_a = np.mean(fwr_a)
     mean_b = np.mean(fwr_b)
     diff = mean_b - mean_a

@@ -4,10 +4,14 @@ from scipy.stats import mannwhitneyu
 from nlp_utils import save_as_json
 
 def run_fwr_analysis_tagged():
+    """
+    Berechnet die FWR direkt aus vorgetaggten POS-Strings der getaggten Korpora.
+    Führt einen zweiseitigen Mann-Whitney-U-Test auf den dokumentweisen FWR-Verteilungen durch.
+    Speichert Ergebnisse inkl. p-Wert und Signifikanz-Flag in fwr_results.json.
+    """
     df_a = pd.read_csv("data/final/03_tagged/corpus_a_tagged.csv")
     df_b = pd.read_csv("data/final/03_tagged/corpus_b_tagged.csv")
     
-    # Definition: Funktionswörter (PRON, DET, ADP, CONJ, PART) / Gesamt
     func_tags = {'PRON', 'DET', 'ADP', 'CCONJ', 'SCONJ', 'PART'}
 
     def get_fwr(pos_string):
@@ -20,7 +24,6 @@ def run_fwr_analysis_tagged():
     fwr_a = df_a['pos_tags'].apply(get_fwr).tolist()
     fwr_b = df_b['pos_tags'].apply(get_fwr).tolist()
 
-    # Mann-Whitney-U
     stat, p_val = mannwhitneyu(fwr_a, fwr_b, alternative='two-sided')
 
     res = {
@@ -32,7 +35,7 @@ def run_fwr_analysis_tagged():
     }
     
     print(f"Ergebnis: p={p_val:.10f}")
-    save_as_json("fwr_results.json", {"mode": "fwr_tagged"}, res)
+    save_as_json("fwr_results_tagged.json", {"mode": "fwr_tagged"}, res)
 
 if __name__ == "__main__":
     run_fwr_analysis_tagged()

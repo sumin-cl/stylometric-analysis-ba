@@ -2,6 +2,11 @@ import os
 import pandas as pd
 
 def extract():
+    """
+    Extrahiert r/MachineLearning-Posts aus dem Kaggle-Reddit-CSV-Datensatz.
+    Filtert auf den Zeitraum 01.01.2019 bis 31.12.2021 und entfernt Posts ohne Text.
+    Speichert das Ergebnis in corpus_a_filtered.csv.
+    """
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DATA_DIR = os.path.normpath(os.path.join(BASE_DIR, '..', 'data', 'raw'))
     

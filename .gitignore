@@ -2,7 +2,7 @@ venv/
 __pycache__/
 *.pyc
 data/
-archive/
+_archive/
 src/deprecated/
 *.csv
 r_machinelearning_posts.jsonl

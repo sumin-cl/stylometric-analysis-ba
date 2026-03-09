@@ -17,7 +17,7 @@ Downsampled B-Corpus (19131 Posts):
 | FWR           | 0.8643        | 0.8395        | -0.0248        |
 | Avg PTD       | 5.32          | 5.28          | -0.03          |
 
--> Increased text density in Corpus B, accompanied by flattening of Parse-Tree-Depth values. 
+-> Increased text density in Corpus B, while Parse-Tree-Depth remains structurally stable (not significant).
 
 Reduction of Sample B -> A (B filtered on A) by Vocabulary Intersection:
 

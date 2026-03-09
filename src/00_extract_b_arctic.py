@@ -3,6 +3,11 @@ import pandas as pd
 import os
 
 def extract():
+    """
+    Extrahiert r/MachineLearning-Posts aus dem Arctic-Shift-JSONL-Datensatz.
+    Filtert auf die Jahre 2023–2025.
+    Speichert das Ergebnis in corpus_b_filtered.csv.
+    """
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DATA_DIR = os.path.normpath(os.path.join(BASE_DIR, '..', 'data', 'raw'))
     

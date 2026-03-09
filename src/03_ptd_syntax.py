@@ -4,33 +4,30 @@ from nlp_utils import analyze_syntax_complexity
 import numpy as np
 
 def run_syntax_analysis():
+    """
+    Berechnet die durchschnittliche Dependency-Parse-Tree-Tiefe pro Post für beide Korpora.
+    Eine geringere mittlere Tiefe deutet auf geringere syntaktische Komplexität hin.
+    Speichert Mittelwerte und Differenz in syntax_parse_depth.json.
+    Gibt die beiden Listen mit Post-Tiefen für nachgelagerte Signifikanztests zurück.
+    """
     print("--- SYNTACTIC COMPLEXITY (Parse Tree Depth) ---")
-    
-    # 1. Laden
+
     df_a = pd.read_csv("data/final/02_processed/corpus_a_2019_2021.csv")
     df_b = pd.read_csv("data/final/02_processed/corpus_b_2023_2025.csv")
 
     min_len = min(len(df_a), len(df_b))
-    
-    test_mode = False 
-    
-    if test_mode:
-        print("ZUM TESTEN: Nur 500 Posts pro Korpus!")
-        min_len = 500
         
     df_a = df_a.sample(n=min_len, random_state=42)
     df_b = df_b.sample(n=min_len, random_state=42)
     
     print(f"Verarbeite {min_len} Posts pro Korpus...")
 
-    # 2. Analyse
     print("\nKorpus A (2019-21):")
     depths_a = analyze_syntax_complexity(df_a['text'])
     
     print("\nKorpus B (2023-25):")
     depths_b = analyze_syntax_complexity(df_b['text'])
     
-    # 3. Statistik
     mean_a = np.mean(depths_a)
     mean_b = np.mean(depths_b)
     
@@ -64,6 +61,10 @@ from scipy.stats import mannwhitneyu
 import numpy as np
 
 def run_significance_test(depths_a, depths_b):
+    """
+    Führt einen zweiseitigen Mann-Whitney-U-Test auf den Baumtiefe-Verteilungen durch.
+    Fügt U-Statistik, p-Wert und rangbiserialen Effektgröße r an syntax_parse_depth.json an.
+    """
     print("\n--- STATISTISCHE SIGNIFIKANZ (Mann-Whitney-U) ---")
     
     stat, p_val = mannwhitneyu(depths_a, depths_b, alternative='two-sided')
@@ -72,11 +73,11 @@ def run_significance_test(depths_a, depths_b):
     print(f"p-Wert: {p_val:.10f}")
 
     if p_val < 0.05:
-        print(">>> Ergebnis ist SIGNIFIKANT (p < 0.05). Der Unterschied ist kein Zufall.")
+        print(">>> Ergebnis ist signifikant (p < 0.05). Der Unterschied ist kein Zufall.")
         if p_val < 0.001:
             print(">>> Höchste Signifikanzstufe erreicht (p < 0.001).")
     else:
-        print(">>> Ergebnis ist NICHT signifikant. Der Unterschied könnte Zufall sein.")
+        print(">>> Ergebnis ist nicht signifikant. Der Unterschied könnte Zufall sein.")
 
     mean_diff = np.mean(depths_a) - np.mean(depths_b)
     print(f"Absolute Differenz der Mittelwerte: {mean_diff:.4f}")

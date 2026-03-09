@@ -3,6 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def analyze_baseline(path_a, path_b):
+    """
+    Berechnet und gibt deskriptive Statistiken beider Korpora aus
+    (Anzahl Posts, mittlere und mediane Token-Länge).
+    Empfiehlt eine Downsampling-Zielgröße und speichert die Ergebnisse in baseline_stats.json.
+    """
     print("--- BASELINE ANALYSE ---")
     
     df_a = pd.read_csv(path_a)
@@ -34,7 +39,7 @@ def analyze_baseline(path_a, path_b):
     print(f"Median Länge: {median_b:.2f} Wörter")
     
     min_count = min(post_count_a, post_count_b)
-    print(f"\n>>> EMPFEHLUNG FÜR DOWNSAMPLING: Reduziere beide auf {min_count} Posts.")
+    print(f"\n>>> Empfehlung für Downsampling: Reduziere beide auf {min_count} Posts.")
 
     meta = {
     "sample_size": min_count,
