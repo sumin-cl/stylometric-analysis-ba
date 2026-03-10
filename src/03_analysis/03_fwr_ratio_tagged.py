@@ -1,16 +1,21 @@
+# src/03_analysis/03_fwr_ratio_tagged.py
 import pandas as pd
 import numpy as np
 from scipy.stats import mannwhitneyu
+from utils.paths import FINAL
 from utils.nlp_utils import save_as_json
 
-def run_fwr_analysis_tagged():
+def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tagged.csv"):
     """
     Berechnet die FWR direkt aus vorgetaggten POS-Strings der getaggten Korpora.
     Führt einen zweiseitigen Mann-Whitney-U-Test auf den dokumentweisen FWR-Verteilungen durch.
     Speichert Ergebnisse inkl. p-Wert und Signifikanz-Flag in fwr_results.json.
     """
-    df_a = pd.read_csv("data/final/03_tagged/corpus_a_tagged.csv")
-    df_b = pd.read_csv("data/final/03_tagged/corpus_b_tagged.csv")
+    path_a = FINAL / "tagged" / input_a
+    path_b = FINAL / "tagged" / input_b
+
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
     
     func_tags = {'PRON', 'DET', 'ADP', 'CCONJ', 'SCONJ', 'PART'}
 
@@ -26,16 +31,21 @@ def run_fwr_analysis_tagged():
 
     stat, p_val = mannwhitneyu(fwr_a, fwr_b, alternative='two-sided')
 
+    meta = {
+        "mode": "fwr_tagged",
+        "source_files": [str(path_a), str(path_b)]
+    }
+
     res = {
-        "mean_fwr_a": np.mean(fwr_a),
-        "mean_fwr_b": np.mean(fwr_b),
+        "mean_fwr_a": float(np.mean(fwr_a)),
+        "mean_fwr_b": float(np.mean(fwr_b)),
         "p_value": float(p_val),
         "u_stat": float(stat),
         "significant": bool(p_val < 0.05)
     }
     
     print(f"Ergebnis: p={p_val:.10f}")
-    save_as_json("fwr_results_tagged.json", {"mode": "fwr_tagged"}, res)
+    save_as_json("fwr_results_tagged.json", meta, res)
 
 if __name__ == "__main__":
     run_fwr_analysis_tagged()

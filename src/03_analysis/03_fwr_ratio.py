@@ -1,19 +1,23 @@
-# src/03_fwr_ratio.py
+# src/03_analysis/03_fwr_ratio.py
 import pandas as pd
 import numpy as np
-from utils.nlp_utils import calculate_fwr_per_doc
+from utils.nlp_utils import calculate_fwr_per_doc, save_as_json
+from utils.paths import FINAL
 
-def run_fwr_analysis():
+def run_fwr_analysis(input_a="corpus_a_cleaned.csv", input_b="corpus_b_cleaned.csv"):
     """
     Berechnet die mittlere Function-Word-Ratio (FWR) pro Dokument für beide Korpora
-    auf Basis von spaCy-POS-Tags.
+    auf Basis von spaCy-POS-Tags. Funktion nimmt bereinigten Texte als Eingabe entgegen.
     FWR = Anzahl Funktionswörter / Anzahl Inhaltswörter pro Post.
     Speichert Mittelwerte, Differenz und Standardabweichungen in fwr_results.json.
     """
     print("--- Start FWR-Analyse (Verbosity Check) ---")
     
-    df_a = pd.read_csv("data/final/02_processed/corpus_a_2019_2021.csv")
-    df_b = pd.read_csv("data/final/02_processed/corpus_b_2023_2025.csv")
+    path_a = FINAL / input_a
+    path_b = FINAL / input_b
+
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
     
     min_len = min(len(df_a), len(df_b))
     print(f"Sampling auf {min_len} Posts...")
@@ -40,18 +44,17 @@ def run_fwr_analysis():
     meta = {
         "sample_size": min_len,
         "mode": "fwr",
-        "source_files": ["data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv"]
+        "source_files": [str(path_a), str(path_b)]
     }
     res = {
-        "mean_fwr_a": mean_a,
-        "mean_fwr_b": mean_b,
-        "diff_fwr": diff,
+        "mean_fwr_a": float(mean_a),
+        "mean_fwr_b": float(mean_b),
+        "diff_fwr": float(diff),
         # For MWU
         "std_fwr_a": float(np.std(fwr_a)),
         "std_fwr_b": float(np.std(fwr_b))
     }
-    from utils.nlp_utils import save_as_json
-    save_as_json(f"fwr_results.json", meta, res)
+    save_as_json("fwr_results.json", meta, res)
 
 if __name__ == "__main__":
     run_fwr_analysis()
