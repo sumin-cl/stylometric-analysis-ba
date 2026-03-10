@@ -7,6 +7,8 @@ DATA = ROOT / "data"
 RAW = DATA / "raw"
 FINAL = DATA / "final"
 
+EXTRACTED = FINAL / "00_extraction"
+
 PROCESSED = FINAL / "02_processed"
 TAGGED = FINAL / "03_tagged"
 RESULTS = FINAL / "results"

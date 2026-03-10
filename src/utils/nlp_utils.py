@@ -67,7 +67,7 @@ def calculate_shannon_entropy(items):
     total = len(items)
     entropy = 0.0
     
-    for count in tqdm(counts.values(), desc="Berechne Entropie"):
+    for count in counts.values():
         p = count / total
         entropy -= p * math.log2(p)
         
@@ -166,7 +166,8 @@ def save_as_json(filename, metadata, results):
     results: Dictionary mit den Messwerten
     """
     output_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data', 'final', 'results'))
-    os.makedirs(output_dir, exist_ok=True)
+    target_path = os.path.join(output_dir, filename)
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
     
     full_data = {
         "timestamp": datetime.now().isoformat(),
@@ -174,7 +175,6 @@ def save_as_json(filename, metadata, results):
         "results": results
     }
     
-    target_path = os.path.join(output_dir, filename)
     with open(target_path, "w", encoding="utf-8") as f:
         json.dump(full_data, f, indent=4)
     

@@ -2,10 +2,11 @@
 import pandas as pd
 from utils.nlp_utils import save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
 from utils.paths import FINAL
+from tqdm import tqdm
 
 def analyze_entropy_per_post(df, mode):
     entropies = []
-    for text in df["text"]:
+    for text in tqdm(df["text"], desc=f"Entropie pro Post ({mode})"):
         if mode == "WORD":
             tokens = get_flat_tokens(pd.Series([text]), use_tqdm=False)
         else:

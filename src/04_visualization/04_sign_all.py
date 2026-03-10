@@ -1,6 +1,8 @@
+# src/04_visualization/04_sign_all.py
 import pandas as pd
 from scipy.stats import mannwhitneyu
 import numpy as np
+from utils.paths import TAGGED, RESULTS
 from utils.nlp_utils import save_as_json
 
 def calculate_significance(name, values_a, values_b):
@@ -17,8 +19,11 @@ def run_all_stats():
     Lädt beide getaggten Korpora und führt Signifikanztests für alle Metriken durch.
     Speichert den vollständigen Signifikanzbericht in final_significance_report.json.
     """
-    df_a = pd.read_csv("data/tagged/corpus_a_tagged.csv")
-    df_b = pd.read_csv("data/tagged/corpus_b_tagged.csv")
+    path_a = TAGGED / "corpus_a_tagged.csv"
+    path_b = TAGGED / "corpus_b_tagged.csv"
+
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
     
     len_a = df_a['text'].str.split().str.len()
     len_b = df_b['text'].str.split().str.len()
@@ -26,7 +31,12 @@ def run_all_stats():
     results = {}
     results["text_length"] = calculate_significance("Text Length", len_a, len_b)
     
-    save_as_json("final_significance_report.json", {"mode": "all_metrics"}, results)
+    meta = {
+        "mode": "all_metrics",
+        "source_files": [str(path_a), str(path_b)]
+    }
+
+    save_as_json("final_significance_report.json", meta, results)
 
 if __name__ == "__main__":
     run_all_stats()
