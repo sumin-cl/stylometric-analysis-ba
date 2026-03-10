@@ -1,6 +1,6 @@
 # src/03_shannon.py
 import pandas as pd
-from nlp_utils import get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
+from utils.nlp_utils import get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
 
 def analyze_entropy_per_post(df, mode):
     entropies = []
@@ -56,7 +56,7 @@ def analyze_entropy(mode="WORD"):
         "diff_entropy_raw": diff_raw,
         "diff_entropy_filtered": diff_filt
     }
-    from nlp_utils import save_as_json
+    from utils.nlp_utils import save_as_json
     save_as_json(f"entropy_{mode.lower()}.json", meta, res_global)
 
     df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)

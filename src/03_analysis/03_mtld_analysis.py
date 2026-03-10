@@ -50,7 +50,7 @@ def mtld_analysis(chunk_size=500):
         "mtld_b_filtered": mtld_b_filt,
         "diff_mtld_filtered": mtld_b_filt - mtld_a
     }
-    from nlp_utils import save_as_json
+    from utils.nlp_utils import save_as_json
     save_as_json(f"mtld_alignment_results.json", meta, res)
 
     mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A")]

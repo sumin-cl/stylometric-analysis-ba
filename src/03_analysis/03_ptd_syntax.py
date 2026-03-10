@@ -1,6 +1,6 @@
 # src/03_syntax.py
 import pandas as pd
-from nlp_utils import analyze_syntax_complexity
+from utils.nlp_utils import analyze_syntax_complexity
 import numpy as np
 
 def run_syntax_analysis():
@@ -51,7 +51,7 @@ def run_syntax_analysis():
         "mean_ptd_b": mean_b,
         "diff_ptd": mean_b - mean_a
     }
-    from nlp_utils import save_as_json
+    from utils.nlp_utils import save_as_json
     save_as_json(f"syntax_parse_depth.json", meta, res)
 
     return depths_a, depths_b
@@ -81,7 +81,7 @@ def run_significance_test(depths_a, depths_b):
 
     mean_diff = np.mean(depths_a) - np.mean(depths_b)
     print(f"Absolute Differenz der Mittelwerte: {mean_diff:.4f}")
-    from nlp_utils import append_to_json
+    from utils.nlp_utils import append_to_json
 
     append_to_json(
         "syntax_parse_depth.json",

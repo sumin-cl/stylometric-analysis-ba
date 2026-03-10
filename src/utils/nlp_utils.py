@@ -1,4 +1,4 @@
-# src/nlp_utils.py
+# src/utils.nlp_utils.py
 import spacy
 import math
 import pandas as pd

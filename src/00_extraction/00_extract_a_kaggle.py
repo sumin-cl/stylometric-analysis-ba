@@ -1,16 +1,14 @@
-import os
+# src/00_extraction/00_extract_a_kaggle.py
 import pandas as pd
+from utils.paths import RAW, EXTRACTED
 
 def extract():
     """
     Extrahiert r/MachineLearning-Posts aus dem Kaggle-Reddit-CSV-Datensatz.
     Filtert auf den Zeitraum 01.01.2019 bis 31.12.2021 und entfernt Posts ohne Text.
-    Speichert das Ergebnis in corpus_a_filtered.csv.
+    Speichert das Ergebnis als unbereinigtes Subset.
     """
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATA_DIR = os.path.normpath(os.path.join(BASE_DIR, '..', 'data', 'raw'))
-    
-    raw_csv = os.path.join(DATA_DIR, "reddit_database.csv")
+    raw_csv = RAW / "reddit_database.csv"
     df = pd.read_csv(raw_csv, low_memory=False)
     
     df = df[df['subreddit'] == 'MachineLearning'].copy()
@@ -25,8 +23,11 @@ def extract():
 
     df = df.dropna(subset=['post'])
     
-    df.to_csv("corpus_a_filtered.csv", index=False)
-    print(f"A extrahiert: {len(df)} Zeilen.")
+    EXTRACTED.mkdir(parents=True, exist_ok=True)
+    output_path = EXTRACTED / "corpus_a_raw_subset.csv"
+    df.to_csv(output_path, index=False)
+
+    print(f"A extrahiert: {len(df)} Zeilen → {output_path}")
 
 if __name__ == "__main__":
     extract()

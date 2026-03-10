@@ -1,7 +1,7 @@
 import pandas as pd
 from scipy.stats import mannwhitneyu
 import numpy as np
-from nlp_utils import save_as_json
+from utils.nlp_utils import save_as_json
 
 def calculate_significance(name, values_a, values_b):
     """

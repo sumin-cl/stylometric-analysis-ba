@@ -1,20 +1,21 @@
-# src/02_baseline.py
+# src/02_eda/02_baseline.py
 import pandas as pd
-import matplotlib.pyplot as plt
+from utils.paths import FINAL
+from utils.nlp_utils import save_as_json
 
-def analyze_baseline(path_a, path_b):
+def analyze_baseline(input_a, input_b):
     """
     Berechnet und gibt deskriptive Statistiken beider Korpora aus
     (Anzahl Posts, mittlere und mediane Token-Länge).
     Empfiehlt eine Downsampling-Zielgröße und speichert die Ergebnisse in baseline_stats.json.
     """
+    path_a = FINAL / input_a
+    path_b = FINAL / input_b
+
     print("--- BASELINE ANALYSE ---")
     
     df_a = pd.read_csv(path_a)
     df_b = pd.read_csv(path_b)
-    
-    df_a['corpus'] = 'A (2019-21)'
-    df_b['corpus'] = 'B (2023-25)'
     
     df_a['tokens'] = df_a['text'].astype(str).apply(lambda x: len(x.split()))
     df_b['tokens'] = df_b['text'].astype(str).apply(lambda x: len(x.split()))
@@ -44,19 +45,18 @@ def analyze_baseline(path_a, path_b):
     meta = {
     "sample_size": min_count,
     "mode": "baseline_statistics",
-    "source_files": ["data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv"]
+    "source_files": [str(path_a), str(path_b)]
     }
     res = {
         "mean_a": mean_a,
         "mean_b": mean_b,
-        "diff_count_a_b_raw": mean_b - mean_a,
+        "diff_mean_b_minus_a": mean_b - mean_a,
         "post_count_a": post_count_a,
         "post_count_b": post_count_b,
         "median_a": median_a,
         "median_b": median_b,
     }
-    from nlp_utils import save_as_json
     save_as_json("baseline_stats.json", meta, res)
 
 if __name__ == "__main__":
-    analyze_baseline('data/final/corpus_a_clean.csv', 'data/final/corpus_b_clean.csv')
+    analyze_baseline("corpus_a_cleaned.csv", "corpus_b_cleaned.csv")

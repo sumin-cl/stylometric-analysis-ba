@@ -1,0 +1,87 @@
+{
+  "files": [
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\00_extraction\\00_extract_a_kaggle.py",
+      "imports": []
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\00_extraction\\00_extract_b_arctic.py",
+      "imports": []
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\01_preprocessing\\01b_pos_tagger.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\01_preprocessing\\01_preprocess.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\cleanup.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\02_eda\\02_baseline.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\03_analysis\\03_fwr_ratio.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py",
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\03_analysis\\03_fwr_ratio_tagged.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\03_analysis\\03_mannwhitney.py",
+      "imports": []
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\03_analysis\\03_mtld_analysis.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\03_analysis\\03_ptd_syntax.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py",
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py",
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\03_analysis\\03_shannon.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py",
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\04_visualization\\04_sign_all.py",
+      "imports": [
+        "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py"
+      ]
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\04_visualization\\04_visualization.py",
+      "imports": []
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\cleanup.py",
+      "imports": []
+    },
+    {
+      "file": "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\src\\utils\\nlp_utils.py",
+      "imports": []
+    }
+  ],
+  "cycles": []
+}

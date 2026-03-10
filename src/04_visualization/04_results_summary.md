@@ -1,6 +1,6 @@
 Data statistics:
 
-| Table 1       | Corpus A      | Corpus B      |
+| Table 1       | Corpus A      | Corpus B      |           |
 |---------------|---------------|---------------|-----------|
 | Posts         | 19131         | 19812         |           |
 | Filesize      | 15750 kb      | 18887 kb      | in kb     |
@@ -29,7 +29,7 @@ Reduction of Sample B -> A (B filtered on A) by Vocabulary Intersection:
 | Entropy       | 10.9068       | 10.6515       | -0.2554        |
 | Entropy (POS) | 3.5722        | 3.5553        | -0.0170        |
 
--> TOPIC-SHIFT impact leads to increased complexity. Without technical terminology texts becomes simpler.
+-> TOPIC-SHIFT impact leads to increased complexity. Without technical terminology texts becomes marginally simpler.
 
 Mann-Whitney-U:
 U-Statistic: 184663006.00

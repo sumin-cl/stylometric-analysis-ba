@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import mannwhitneyu
-from nlp_utils import save_as_json
+from utils.nlp_utils import save_as_json
 
 def run_fwr_analysis_tagged():
     """

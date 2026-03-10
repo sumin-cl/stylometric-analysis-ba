@@ -1,7 +1,7 @@
 # src/03_fwr_ratio.py
 import pandas as pd
 import numpy as np
-from nlp_utils import calculate_fwr_per_doc
+from utils.nlp_utils import calculate_fwr_per_doc
 
 def run_fwr_analysis():
     """
@@ -50,7 +50,7 @@ def run_fwr_analysis():
         "std_fwr_a": float(np.std(fwr_a)),
         "std_fwr_b": float(np.std(fwr_b))
     }
-    from nlp_utils import save_as_json
+    from utils.nlp_utils import save_as_json
     save_as_json(f"fwr_results.json", meta, res)
 
 if __name__ == "__main__":
