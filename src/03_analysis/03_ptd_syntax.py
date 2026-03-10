@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from utils.paths import FINAL
 from utils.nlp_utils import analyze_syntax_complexity, save_as_json
+import json
 
 def run_syntax_analysis():
     """
@@ -27,11 +28,11 @@ def run_syntax_analysis():
     print(f"Verarbeite {min_len} Posts pro Korpus...")
 
     print("\nKorpus A (2019-21):")
-    depths_a = analyze_syntax_complexity(df_a['text'])
-    
+    depths_a = json.load(open(FINAL / "parsed/corpus_a_cleaned_parsed_depths.json"))
+
     print("\nKorpus B (2023-25):")
-    depths_b = analyze_syntax_complexity(df_b['text'])
-    
+    depths_b = json.load(open(FINAL / "parsed/corpus_b_cleaned_parsed_depths.json"))
+
     mean_a = np.mean(depths_a)
     mean_b = np.mean(depths_b)
 
