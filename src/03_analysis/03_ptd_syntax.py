@@ -1,7 +1,8 @@
 # src/03_syntax.py
 import pandas as pd
-from utils.nlp_utils import analyze_syntax_complexity
 import numpy as np
+from utils.paths import FINAL
+from utils.nlp_utils import analyze_syntax_complexity, save_as_json
 
 def run_syntax_analysis():
     """
@@ -12,8 +13,11 @@ def run_syntax_analysis():
     """
     print("--- SYNTACTIC COMPLEXITY (Parse Tree Depth) ---")
 
-    df_a = pd.read_csv("data/final/02_processed/corpus_a_2019_2021.csv")
-    df_b = pd.read_csv("data/final/02_processed/corpus_b_2023_2025.csv")
+    path_a = FINAL / "corpus_a_cleaned.csv"
+    path_b = FINAL / "corpus_b_cleaned.csv"
+
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
 
     min_len = min(len(df_a), len(df_b))
         
@@ -30,6 +34,8 @@ def run_syntax_analysis():
     
     mean_a = np.mean(depths_a)
     mean_b = np.mean(depths_b)
+
+    diff = mean_b - mean_a
     
     print("\n--- ERGEBNISSE ---")
     print(f"Durchschnittliche Baumtiefe A: {mean_a:.2f}")
@@ -44,21 +50,21 @@ def run_syntax_analysis():
     meta = {
         "sample_size": min_len,
         "mode": "parse_tree_depth",
-        "source_files": ["data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv"]
+        "source_files": [str(path_a), str(path_b)]
     }
     res = {
         "mean_ptd_a": mean_a,
         "mean_ptd_b": mean_b,
-        "diff_ptd": mean_b - mean_a
+        "diff_ptd": diff
     }
-    from utils.nlp_utils import save_as_json
     save_as_json(f"syntax_parse_depth.json", meta, res)
 
     return depths_a, depths_b
 
-# src/03_mannwhitney.py
+# src/03_analysis/03_mannwhitney.py
 from scipy.stats import mannwhitneyu
 import numpy as np
+from utils.nlp_utils import append_to_json
 
 def run_significance_test(depths_a, depths_b):
     """
@@ -81,7 +87,6 @@ def run_significance_test(depths_a, depths_b):
 
     mean_diff = np.mean(depths_a) - np.mean(depths_b)
     print(f"Absolute Differenz der Mittelwerte: {mean_diff:.4f}")
-    from utils.nlp_utils import append_to_json
 
     append_to_json(
         "syntax_parse_depth.json",

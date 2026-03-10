@@ -1,8 +1,9 @@
-# src/03_analysis.py
+# src/03_analysis/03_mtld_analysis.py
 import pandas as pd
 from collections import Counter
 from lexical_diversity import lex_div as ld
 from tqdm import tqdm
+from utils.paths import FINAL
 
 def chunk_tokens(tokens, chunk_size=500):
     """Teilt eine Tokenliste in gleich große Chunks auf."""
@@ -16,8 +17,11 @@ def mtld_analysis(chunk_size=500):
     Typen enthält, die in Korpus A mindestens 3-mal vorkommen — zur Kontrolle des Topic-Shifts.
     Speichert alle drei MTLD-Werte und die gefilterte Differenz in mtld_alignment_results.json.
     """
-    df_a = pd.read_csv("data/final/corpus_a_clean.csv")
-    df_b = pd.read_csv("data/final/corpus_b_clean.csv")
+    path_a = FINAL / "corpus_a_cleaned.csv"
+    path_b = FINAL / "corpus_b_cleaned.csv"
+
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
 
     size = min(len(df_a), len(df_b))
     df_a = df_a.sample(n=size, random_state=42)
@@ -42,13 +46,13 @@ def mtld_analysis(chunk_size=500):
     meta = {
     "sample_size": size,
     "mode": "mtld",
-    "source_files": ["corpus_a_clean.csv", "corpus_b_clean.csv"]
+    "source_files": [str(FINAL / "corpus_a_cleaned.csv"), str(FINAL / "corpus_b_cleaned.csv")]
     }
     res = {
-        "mtld_a_standard": mtld_a,
-        "mtld_b_standard": mtld_b,
-        "mtld_b_filtered": mtld_b_filt,
-        "diff_mtld_filtered": mtld_b_filt - mtld_a
+        "mtld_a_standard": float(mtld_a),
+        "mtld_b_standard": float(mtld_b),
+        "mtld_b_filtered": float(mtld_b_filt),
+        "diff_mtld_filtered": float(mtld_b_filt - mtld_a)
     }
     from utils.nlp_utils import save_as_json
     save_as_json(f"mtld_alignment_results.json", meta, res)

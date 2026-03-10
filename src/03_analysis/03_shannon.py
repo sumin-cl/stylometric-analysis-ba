@@ -1,6 +1,7 @@
-# src/03_shannon.py
+# src/03_analysis/03_shannon.py
 import pandas as pd
-from utils.nlp_utils import get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
+from utils.nlp_utils import save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
+from utils.paths import FINAL
 
 def analyze_entropy_per_post(df, mode):
     entropies = []
@@ -14,10 +15,14 @@ def analyze_entropy_per_post(df, mode):
 
 def analyze_entropy(mode="WORD"):
     """
-    mode: "WORD" für Wort-Entropie, "POS" für Grammatik-Entropie
+    mode: "WORD" für Wort-Entropie, "POS" für Grammatik-Entropie.
+    Berechnet globale Entropie und dokumentweise Entropie.
     """
     print(f"\n=== STARTE ENTROPIE-ANALYSE: {mode} ===")
-    df_a, df_b, size = downsample_corpora("data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv")
+    path_a = FINAL / "corpus_a_cleaned.csv"
+    path_b = FINAL / "corpus_b_cleaned.csv"
+
+    df_a, df_b, size = downsample_corpora(path_a, path_b)
 
     if mode == "WORD":
         list_a = get_flat_tokens(df_a['text'])
@@ -48,15 +53,15 @@ def analyze_entropy(mode="WORD"):
     meta = {
         "sample_size": size,
         "mode": mode,
-        "source_files": ["data/final/corpus_a_clean.csv", "data/final/corpus_b_clean.csv"]
+        "source_files": [str(path_a), str(path_b)]
     }
     res_global = {
-        "entropy_a": entropy_a,
-        "entropy_b": entropy_b,
-        "diff_entropy_raw": diff_raw,
-        "diff_entropy_filtered": diff_filt
+        "entropy_a": float(entropy_a),
+        "entropy_b": float(entropy_b),
+        "diff_entropy_raw": float(diff_raw),
+        "diff_entropy_filtered": float(diff_filt)
     }
-    from utils.nlp_utils import save_as_json
+
     save_as_json(f"entropy_{mode.lower()}.json", meta, res_global)
 
     df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
@@ -67,7 +72,8 @@ def analyze_entropy(mode="WORD"):
         "entropy_per_post_b": df_b["entropy_post"].tolist()
     }
 
-    save_as_json(f"entropy_per_post_{mode.lower()}.json", meta, res_posts)
+    save_as_json(f"entropy/entropy_per_post_{mode.lower()}.json", meta, res_posts)
+
 
 if __name__ == "__main__":
     analyze_entropy(mode="WORD")

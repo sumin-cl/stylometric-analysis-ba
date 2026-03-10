@@ -10,3 +10,7 @@ FINAL = DATA / "final"
 PROCESSED = FINAL / "02_processed"
 TAGGED = FINAL / "03_tagged"
 RESULTS = FINAL / "results"
+RESULTS_ENTROPY = RESULTS / "entropy"
+
+RESULTS.mkdir(parents=True, exist_ok=True)
+RESULTS_ENTROPY.mkdir(parents=True, exist_ok=True)

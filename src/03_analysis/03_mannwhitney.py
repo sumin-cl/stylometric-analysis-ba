@@ -1,4 +1,4 @@
-# src/03_mannwhitney.py
+# src/03_analysis/03_mannwhitney.py
 from scipy.stats import mannwhitneyu
 import numpy as np
 
