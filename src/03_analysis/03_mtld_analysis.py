@@ -3,7 +3,7 @@ import pandas as pd
 from collections import Counter
 from lexical_diversity import lex_div as ld
 from tqdm import tqdm
-from utils.paths import FINAL
+from utils.paths import FINAL, PROCESSED
 
 def chunk_tokens(tokens, chunk_size=500):
     """Teilt eine Tokenliste in gleich große Chunks auf."""
@@ -17,8 +17,8 @@ def mtld_analysis(chunk_size=500):
     Typen enthält, die in Korpus A mindestens 3-mal vorkommen — zur Kontrolle des Topic-Shifts.
     Speichert alle drei MTLD-Werte und die gefilterte Differenz in mtld_alignment_results.json.
     """
-    path_a = FINAL / "corpus_a_cleaned.csv"
-    path_b = FINAL / "corpus_b_cleaned.csv"
+    path_a = PROCESSED / "corpus_a_cleaned.csv"
+    path_b = PROCESSED / "corpus_b_cleaned.csv"
 
     df_a = pd.read_csv(path_a)
     df_b = pd.read_csv(path_b)
@@ -46,7 +46,7 @@ def mtld_analysis(chunk_size=500):
     meta = {
     "sample_size": size,
     "mode": "mtld",
-    "source_files": [str(FINAL / "corpus_a_cleaned.csv"), str(FINAL / "corpus_b_cleaned.csv")]
+    "source_files": [str(PROCESSED / "corpus_a_cleaned.csv"), str(PROCESSED / "corpus_b_cleaned.csv")]
     }
     res = {
         "mtld_a_standard": float(mtld_a),

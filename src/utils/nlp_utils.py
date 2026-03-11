@@ -158,14 +158,16 @@ def calculate_fwr_per_doc(df_series):
 import os, json
 from datetime import datetime
 
-def save_as_json(filename, metadata, results):
+def save_as_json(filename, metadata, results, output_dir=None):
     """
     Speichert Analyse-Ergebnisse als JSON in data/final/results/.
     filename: Name der Datei (z.B. 'entropy_results.json')
     metadata: Dictionary mit Infos (sample_size, corpus_names, etc.)
     results: Dictionary mit den Messwerten
     """
-    output_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data', 'final', 'results'))
+    if output_dir is None:
+        output_dir = os.path.normpath(os.path.join(
+            os.path.dirname(__file__), '..', '..', 'data', 'final', 'results'))
     target_path = os.path.join(output_dir, filename)
     os.makedirs(os.path.dirname(target_path), exist_ok=True)
     
@@ -180,12 +182,14 @@ def save_as_json(filename, metadata, results):
     
     print(f"\n[EXPORT] Ergebnisse gesichert in: {target_path}")
 
-def append_to_json(filename, new_results):
+def append_to_json(filename, new_results, output_dir=None):
     """
     Öffnet eine bestehende JSON-Datei in data/final/results/,
     merged neue Ergebnisse hinein und speichert sie wieder.
     """
-    output_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data', 'final', 'results'))
+    if output_dir is None:
+        output_dir = os.path.normpath(os.path.join(
+            os.path.dirname(__file__), '..', '..', 'data', 'final', 'results'))
     target_path = os.path.join(output_dir, filename)
 
     with open(target_path, "r", encoding="utf-8") as f:

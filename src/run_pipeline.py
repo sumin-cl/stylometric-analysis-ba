@@ -21,7 +21,6 @@ STEPS = [
     ("03_analysis/03_ptd_syntax.py", "Syntax-Analyse (PTD)"),
     ("03_analysis/03_fwr_ratio.py", "FWR-Analyse (untagged)"),
     ("03_analysis/03_fwr_ratio_tagged.py", "FWR-Analyse (tagged)"),
-    ("03_analysis/03_mannwhitney.py", "Syntax-Signifikanz (MWU)"),
     ("04_visualization/04_sign_all.py", "Globale Signifikanztests"),
     ("04_visualization/04_visualization.py", "Visualisierungen"),
 ]

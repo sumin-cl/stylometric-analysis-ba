@@ -2,7 +2,7 @@
 import pandas as pd
 from utils.nlp_utils import nlp 
 from tqdm import tqdm
-from utils.paths import FINAL
+from utils.paths import FINAL, PROCESSED, TAGGED
 from pathlib import Path
 
 def tag_and_save(input_name, output_name=None):
@@ -13,7 +13,7 @@ def tag_and_save(input_name, output_name=None):
     Erwartet Dateien aus data/final/.
     Speichert die POS-Tag-Sequenzen unter data/final/tagged/.
     """
-    input_path = FINAL / input_name
+    input_path = PROCESSED / input_name
 
     if output_name is None:
         stem = Path(input_name).stem.replace("_cleaned", "")
@@ -30,7 +30,7 @@ def tag_and_save(input_name, output_name=None):
     
     df['pos_tags'] = pos_tags_list
     
-    tagged_dir = FINAL / "tagged"
+    tagged_dir = TAGGED
     tagged_dir.mkdir(parents=True, exist_ok=True)
 
     output_path = tagged_dir / f"{output_name}.csv"

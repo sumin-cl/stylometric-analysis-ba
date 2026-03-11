@@ -1,7 +1,7 @@
 # src/03_syntax.py
 import pandas as pd
 import numpy as np
-from utils.paths import FINAL
+from utils.paths import FINAL, PROCESSED, PARSED
 from utils.nlp_utils import analyze_syntax_complexity, save_as_json
 import json
 
@@ -14,8 +14,8 @@ def run_syntax_analysis():
     """
     print("--- SYNTACTIC COMPLEXITY (Parse Tree Depth) ---")
 
-    path_a = FINAL / "corpus_a_cleaned.csv"
-    path_b = FINAL / "corpus_b_cleaned.csv"
+    path_a = PROCESSED / "corpus_a_cleaned.csv"
+    path_b = PROCESSED / "corpus_b_cleaned.csv"
 
     df_a = pd.read_csv(path_a)
     df_b = pd.read_csv(path_b)
@@ -28,10 +28,10 @@ def run_syntax_analysis():
     print(f"Verarbeite {min_len} Posts pro Korpus...")
 
     print("\nKorpus A (2019-21):")
-    depths_a = json.load(open(FINAL / "parsed/corpus_a_cleaned_parsed_depths.json"))
+    depths_a = json.load(open(PARSED /"corpus_a_cleaned_parsed_depths.json"))
 
     print("\nKorpus B (2023-25):")
-    depths_b = json.load(open(FINAL / "parsed/corpus_b_cleaned_parsed_depths.json"))
+    depths_b = json.load(open(PARSED / "corpus_b_cleaned_parsed_depths.json"))
 
     mean_a = np.mean(depths_a)
     mean_b = np.mean(depths_b)

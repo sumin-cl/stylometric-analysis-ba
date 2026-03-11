@@ -3,16 +3,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
-DATA = ROOT / "data"
-RAW = DATA / "raw"
+DATA  = ROOT / "data"
+RAW   = DATA / "raw"
 FINAL = DATA / "final"
 
 EXTRACTED = FINAL / "00_extraction"
+PROCESSED = FINAL / "01_processed" 
+EDA       = FINAL / "02_eda"  
+TAGGED    = FINAL / "03_tagged"     
+PARSED    = FINAL / "04_parsed"     
 
-PROCESSED = FINAL / "02_processed"
-TAGGED = FINAL / "03_tagged"
-RESULTS = FINAL / "results"
+RESULTS         = FINAL / "results"
 RESULTS_ENTROPY = RESULTS / "entropy"
 
-RESULTS.mkdir(parents=True, exist_ok=True)
-RESULTS_ENTROPY.mkdir(parents=True, exist_ok=True)
+for p in [PROCESSED, EDA, TAGGED, PARSED, RESULTS, RESULTS_ENTROPY]:
+    p.mkdir(parents=True, exist_ok=True)

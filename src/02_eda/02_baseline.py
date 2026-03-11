@@ -1,6 +1,6 @@
 # src/02_eda/02_baseline.py
 import pandas as pd
-from utils.paths import FINAL
+from utils.paths import FINAL, EDA, PROCESSED
 from utils.nlp_utils import save_as_json
 
 def analyze_baseline(input_a, input_b):
@@ -9,8 +9,8 @@ def analyze_baseline(input_a, input_b):
     (Anzahl Posts, mittlere und mediane Token-Länge).
     Empfiehlt eine Downsampling-Zielgröße und speichert die Ergebnisse in baseline_stats.json.
     """
-    path_a = FINAL / input_a
-    path_b = FINAL / input_b
+    path_a = PROCESSED / input_a
+    path_b = PROCESSED / input_b
 
     print("--- BASELINE ANALYSE ---")
     
@@ -56,7 +56,7 @@ def analyze_baseline(input_a, input_b):
         "median_a": median_a,
         "median_b": median_b,
     }
-    save_as_json("baseline_stats.json", meta, res)
+    save_as_json("baseline_stats.json", meta, res, output_dir=str(EDA))
 
 if __name__ == "__main__":
     analyze_baseline("corpus_a_cleaned.csv", "corpus_b_cleaned.csv")

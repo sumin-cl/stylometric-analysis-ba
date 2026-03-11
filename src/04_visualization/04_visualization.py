@@ -7,7 +7,7 @@ from pathlib import Path
 sns.set_theme(style="whitegrid", context="talk")
 
 def plot_entropy_distribution():
-    path = RESULTS / "entropy_per_post_word.json"
+    path = RESULTS / "entropy" / "entropy_per_post_word.json"
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -81,3 +81,6 @@ def run_all_plots():
 
     print("\n[Plot] MTLD Chunks (Filtered)…")
     plot_mtld_chunks_filtered()
+
+if __name__ == "__main__":
+    run_all_plots()

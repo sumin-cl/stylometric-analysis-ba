@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 from utils.nlp_utils import calculate_fwr_per_doc, save_as_json
-from utils.paths import FINAL
+from utils.paths import FINAL, PROCESSED
 
 def run_fwr_analysis(input_a="corpus_a_cleaned.csv", input_b="corpus_b_cleaned.csv"):
     """
@@ -13,8 +13,8 @@ def run_fwr_analysis(input_a="corpus_a_cleaned.csv", input_b="corpus_b_cleaned.c
     """
     print("--- Start FWR-Analyse (Verbosity Check) ---")
     
-    path_a = FINAL / input_a
-    path_b = FINAL / input_b
+    path_a = PROCESSED / input_a
+    path_b = PROCESSED / input_b
 
     df_a = pd.read_csv(path_a)
     df_b = pd.read_csv(path_b)

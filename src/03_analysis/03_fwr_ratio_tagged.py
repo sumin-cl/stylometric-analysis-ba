@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import mannwhitneyu
-from utils.paths import FINAL
+from utils.paths import FINAL, TAGGED
 from utils.nlp_utils import save_as_json
 
 def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tagged.csv"):
@@ -11,8 +11,8 @@ def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tag
     Führt einen zweiseitigen Mann-Whitney-U-Test auf den dokumentweisen FWR-Verteilungen durch.
     Speichert Ergebnisse inkl. p-Wert und Signifikanz-Flag in fwr_results.json.
     """
-    path_a = FINAL / "tagged" / input_a
-    path_b = FINAL / "tagged" / input_b
+    path_a = TAGGED / input_a
+    path_b = TAGGED / input_b
 
     df_a = pd.read_csv(path_a)
     df_b = pd.read_csv(path_b)

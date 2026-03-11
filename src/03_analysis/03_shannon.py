@@ -1,17 +1,20 @@
 # src/03_analysis/03_shannon.py
 import pandas as pd
-from utils.nlp_utils import save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
-from utils.paths import FINAL
+from utils.nlp_utils import nlp, save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
+from utils.paths import FINAL, PROCESSED
 from tqdm import tqdm
 
 def analyze_entropy_per_post(df, mode):
     entropies = []
-    for text in tqdm(df["text"], desc=f"Entropie pro Post ({mode})"):
-        if mode == "WORD":
+    if mode == "POS":
+        all_docs = list(nlp.pipe(df["text"].astype(str), batch_size=100))
+        for doc in tqdm(all_docs, desc="Entropie pro Post (POS)"):
+            tokens = [token.pos_ for token in doc]
+            entropies.append(calculate_shannon_entropy(tokens))
+    else:
+        for text in tqdm(df["text"], desc="Entropie pro Post (WORD)"):
             tokens = get_flat_tokens(pd.Series([text]), use_tqdm=False)
-        else:
-            tokens = get_pos_tags(pd.Series([text]))
-        entropies.append(calculate_shannon_entropy(tokens))
+            entropies.append(calculate_shannon_entropy(tokens))
     return entropies
 
 def analyze_entropy(mode="WORD"):
@@ -20,8 +23,8 @@ def analyze_entropy(mode="WORD"):
     Berechnet globale Entropie und dokumentweise Entropie.
     """
     print(f"\n=== STARTE ENTROPIE-ANALYSE: {mode} ===")
-    path_a = FINAL / "corpus_a_cleaned.csv"
-    path_b = FINAL / "corpus_b_cleaned.csv"
+    path_a = PROCESSED / "corpus_a_cleaned.csv"
+    path_b = PROCESSED / "corpus_b_cleaned.csv"
 
     df_a, df_b, size = downsample_corpora(path_a, path_b)
 

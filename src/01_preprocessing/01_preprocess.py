@@ -1,7 +1,7 @@
 # src/01_preprocessing/01_preprocess.py
 import pandas as pd
 from utils.cleanup import clean_reddit_text
-from utils.paths import FINAL, EXTRACTED
+from utils.paths import FINAL, EXTRACTED, PROCESSED
 from pathlib import Path
 
 def pipeline(input_name, output_name=None):
@@ -25,7 +25,7 @@ def pipeline(input_name, output_name=None):
     df = df[df['tokens'] >= 30].copy()
     
     FINAL.mkdir(parents=True, exist_ok=True)
-    output_path = FINAL / f"{output_name}.csv"
+    output_path = PROCESSED / f"{output_name}.csv"
     df[['id', 'date', 'text']].to_csv(output_path, index=False)
     print(f"Gespeichert: {output_path} ({len(df)} Zeilen)")
 
