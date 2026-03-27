@@ -23,6 +23,7 @@ STEPS = [
     ("03_analysis/03_fwr_ratio_tagged.py", "FWR-Analyse (tagged)"),
     ("04_visualization/04_sign_all.py", "Globale Signifikanztests"),
     ("04_visualization/04_visualization.py", "Visualisierungen"),
+    ("01_preprocessing/01b_downsample.py", "Downsampling"),
 ]
 
 def create_final_snapshot():

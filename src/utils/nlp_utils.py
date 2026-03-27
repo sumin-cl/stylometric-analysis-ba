@@ -55,6 +55,20 @@ def downsample_corpora(a, b):
 
     return df_a, df_b, size
 
+def downsample_corpora_manual(a, b, size):
+    """
+    Lädt zwei Korpora und downsamplet sie auf eine vordefinierte Anzahl an Posts.
+    """
+    df_a = pd.read_csv(a)
+    df_b = pd.read_csv(b)
+
+    df_a = df_a.sample(n=size, random_state=42)
+    df_b = df_b.sample(n=size, random_state=42)
+
+    print(f"Downsampled auf {size} Posts pro Korpus.")
+
+    return df_a, df_b
+
 def calculate_shannon_entropy(items):
     """
     Berechnet die Shannon-Entropie für eine beliebige Liste (Wörter oder Tags).

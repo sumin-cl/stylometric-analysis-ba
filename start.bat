@@ -35,6 +35,8 @@ echo  --- Output ---
 echo  [13] Globale Signifikanztests
 echo  [14] Visualisierungen
 echo.
+echo  [15] Downsampling
+echo.
 echo  [q]  Beenden
 echo.
 set /p choice="Auswahl: "
@@ -54,6 +56,7 @@ if "%choice%"=="11" python src\03_analysis\03_fwr_ratio_tagged.py      & goto do
 if "%choice%"=="12" python src\03_analysis\03_mannwhitney.py           & goto done
 if "%choice%"=="13" python src\04_visualization\04_sign_all.py         & goto done
 if "%choice%"=="14" python src\04_visualization\04_visualization.py    & goto done
+if "%choice%"=="15" python src\01_preprocessing\01b_downsampling.py    & goto done
 if /i "%choice%"=="q" exit /b
 
 echo Ungueltige Eingabe.
