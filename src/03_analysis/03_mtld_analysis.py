@@ -4,6 +4,7 @@ from collections import Counter
 from lexical_diversity import lex_div as ld
 from tqdm import tqdm
 from utils.paths import FINAL, PROCESSED
+from utils.nlp_utils import save_as_json
 
 def chunk_tokens(tokens, chunk_size=500):
     """Teilt eine Tokenliste in gleich große Chunks auf."""
@@ -54,7 +55,7 @@ def mtld_analysis(chunk_size=500):
         "mtld_b_filtered": float(mtld_b_filt),
         "diff_mtld_filtered": float(mtld_b_filt - mtld_a)
     }
-    from utils.nlp_utils import save_as_json
+    
     save_as_json(f"mtld_alignment_results.json", meta, res)
 
     mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A")]
@@ -68,5 +69,69 @@ def mtld_analysis(chunk_size=500):
     }
     save_as_json(f"mtld_chunks_results.json", meta, res_chunks)
 
+def mtld_analysis_downsampled(sample_num=1, chunk_size=500):
+    """
+    Berechnet MTLD für vorbereitete Downsampling-Samples (n=500, 150-300 Tokens).
+    Analog zu mtld_analysis(), aber ohne internes Sampling — die Samples sind bereits
+    balanciert und gefiltert. Berechnet zusätzlich einen vokabulargefilterten MTLD
+    für Korpus B (nur Typen mit min. 3 Vorkommen in A) zur Kontrolle des Topic-Shifts.
+    Speichert globale Ergebnisse in mtld_results_sample{sample_num}.json und
+    Chunk-Werte in mtld_chunks_sample{sample_num}.json.
+    """
+    print(f"\n=== STARTE MTLD-ANALYSE (Sample {sample_num}) ===")
+ 
+    path_a = PROCESSED / f"sample{sample_num}_pre_n500.csv"
+    path_b = PROCESSED / f"sample{sample_num}_post_n500.csv"
+ 
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
+    size = len(df_a)  # n=500
+ 
+    tokens_a = " ".join(df_a['text'].astype(str)).lower().split()
+    tokens_b = " ".join(df_b['text'].astype(str)).lower().split()
+ 
+    mtld_a = ld.mtld(tokens_a)
+    mtld_b = ld.mtld(tokens_b)
+ 
+    vocab_a = {w for w, c in Counter(tokens_a).items() if c >= 3}
+    tokens_b_filtered = [t for t in tokens_b if t in vocab_a]
+    mtld_b_filt = ld.mtld(tokens_b_filtered)
+ 
+    print(f"Ergebnisse (Sample {sample_num}, N={size}):")
+    print(f"MTLD A (Pre):    {mtld_a:.2f}")
+    print(f"MTLD B (Raw):    {mtld_b:.2f}")
+    print(f"MTLD B (Filt):   {mtld_b_filt:.2f} (Differenz zu A: {mtld_b_filt - mtld_a:.2f})")
+ 
+    meta = {
+        "sample_size": size,
+        "sample_num": sample_num,
+        "mode": "mtld",
+        "source_files": [path_a.name, path_b.name]
+    }
+    res = {
+        "mtld_a_standard": float(mtld_a),
+        "mtld_b_standard": float(mtld_b),
+        "mtld_b_filtered": float(mtld_b_filt),
+        "diff_mtld_filtered": float(mtld_b_filt - mtld_a)
+    }
+    save_as_json(f"mtld_results_sample{sample_num}.json", meta, res)
+ 
+    mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A")]
+    mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B")]
+    mtld_chunks_b_filtered = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b_filtered, chunk_size), desc="MTLD Chunks B (Filt)")]
+ 
+    res_chunks = {
+        "mtld_chunks_a": mtld_chunks_a,
+        "mtld_chunks_b": mtld_chunks_b,
+        "mtld_chunks_b_filtered": mtld_chunks_b_filtered
+    }
+    save_as_json(f"mtld_chunks_sample{sample_num}.json", meta, res_chunks)
+
 if __name__ == "__main__":
-    mtld_analysis()
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
+    if mode == "full":
+        mtld_analysis()
+    else:
+        sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+        mtld_analysis_downsampled(sample_num=sample)

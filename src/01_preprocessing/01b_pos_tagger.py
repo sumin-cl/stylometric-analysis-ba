@@ -39,5 +39,5 @@ def tag_and_save(input_name, output_name=None):
     print(f"Gespeichert: {output_path} ({len(df)} Zeilen)")
 
 if __name__ == "__main__":
-    tag_and_save("corpus_a_cleaned.csv")
-    tag_and_save("corpus_b_cleaned.csv")
+    tag_and_save("sample1_pre_n500.csv")
+    tag_and_save("sample1_post_n500.csv")

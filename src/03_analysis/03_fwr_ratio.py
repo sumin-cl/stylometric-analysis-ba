@@ -56,5 +56,53 @@ def run_fwr_analysis(input_a="corpus_a_cleaned.csv", input_b="corpus_b_cleaned.c
     }
     save_as_json("fwr_results.json", meta, res)
 
+def run_fwr_analysis_downsampled(sample_num=1):
+    """
+    Berechnet die mittlere Function-Word-Ratio (FWR) pro Dokument für beide Korpora
+    auf Basis von spaCy-POS-Tags. Funktion nimmt bereinigten Texte als Eingabe entgegen.
+    FWR = Anzahl Funktionswörter / Anzahl Inhaltswörter pro Post.
+    Speichert Mittelwerte, Differenz und Standardabweichungen in fwr_results.json.
+    """
+    print("--- Start FWR-Analyse (Verbosity Check) ---")
+    
+    path_a = PROCESSED / f"sample{sample_num}_pre_n500.csv"
+    path_b = PROCESSED / f"sample{sample_num}_post_n500.csv"
+
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
+    size = len(df_a)  # Entspricht n=500
+
+    fwr_a = calculate_fwr_per_doc(df_a['text'])
+    fwr_b = calculate_fwr_per_doc(df_b['text'])
+
+    mean_a = np.mean(fwr_a)
+    mean_b = np.mean(fwr_b)
+    diff = mean_b - mean_a
+    
+    print("\n--- ERGEBNISSE ---")
+    print(f"FWR A (2019-21): {mean_a:.4f}")
+    print(f"FWR B (2023-25): {mean_b:.4f}")
+    print(f"Differenz: {diff:.4f}")
+    
+    if diff > 0:
+        print(">> Hypothese gestützt: Texte werden 'dünner' (mehr Funktionswörter pro Inhalt).")
+    else:
+        print(">> Hypothese abgelehnt: Texte werden dichter.")
+
+    meta = {
+        "sample_size": size,
+        "mode": "fwr",
+        "source_files": [str(path_a), str(path_b)]
+    }
+    res = {
+        "mean_fwr_a": float(mean_a),
+        "mean_fwr_b": float(mean_b),
+        "diff_fwr": float(diff),
+        # For MWU
+        "std_fwr_a": float(np.std(fwr_a)),
+        "std_fwr_b": float(np.std(fwr_b))
+    }
+    save_as_json(f"fwr_results_sample{sample_num}.json", meta, res)
+
 if __name__ == "__main__":
-    run_fwr_analysis()
+    run_fwr_analysis_downsampled()

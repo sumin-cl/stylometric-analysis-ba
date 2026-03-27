@@ -24,7 +24,10 @@ echo  --- EDA ---
 echo  [6]  Baseline-Analyse
 echo.
 echo  --- Analysis ---
-echo  [7]  MTLD-Analyse
+echo  [7]  MTLD-Analyse (Full Corpus)
+echo  [7a] MTLD-Analyse (Sample 1)
+echo  [7b] MTLD-Analyse (Sample 2)
+echo  [7c] MTLD-Analyse (Sample 3)
 echo  [8]  Entropie-Analyse
 echo  [9]  Syntax-Analyse (PTD)
 echo  [10] FWR-Analyse (untagged)
@@ -48,7 +51,10 @@ if "%choice%"=="3"  python src\01_preprocessing\01_preprocess.py       & goto do
 if "%choice%"=="4"  python src\01_preprocessing\01b_pos_tagger.py      & goto done
 if "%choice%"=="5"  python src\01_preprocessing\01_parse_and_cache.py  & goto done
 if "%choice%"=="6"  python src\02_eda\02_baseline.py                   & goto done
-if "%choice%"=="7"  python src\03_analysis\03_mtld_analysis.py         & goto done
+if "%choice%"=="7"  python src\03_analysis\03_mtld_analysis.py full        & goto done
+if "%choice%"=="7a" python src\03_analysis\03_mtld_analysis.py downsampled 1 & goto done
+if "%choice%"=="7b" python src\03_analysis\03_mtld_analysis.py downsampled 2 & goto done
+if "%choice%"=="7c" python src\03_analysis\03_mtld_analysis.py downsampled 3 & goto done
 if "%choice%"=="8"  python src\03_analysis\03_shannon.py               & goto done
 if "%choice%"=="9"  python src\03_analysis\03_ptd_syntax.py            & goto done
 if "%choice%"=="10" python src\03_analysis\03_fwr_ratio.py             & goto done
