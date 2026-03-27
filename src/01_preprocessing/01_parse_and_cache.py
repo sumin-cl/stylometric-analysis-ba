@@ -15,8 +15,8 @@ def cache_parse_depths():
 
         print(f"Gespeichert: {out_path}")
 
-def cache_parse_depths_downsampled():
-    for corpus in ["sample1_pre_n500.csv", "sample1_post_n500.csv"]:
+def cache_parse_depths_downsampled(sample_num=1):
+    for corpus in [f"sample{sample_num}_pre_n500.csv", f"sample{sample_num}_post_n500.csv"]:
         df = pd.read_csv(PROCESSED / corpus)
         depths = analyze_syntax_complexity(df["text"])
 
@@ -28,4 +28,10 @@ def cache_parse_depths_downsampled():
         print(f"Gespeichert: {out_path}")
 
 if __name__ == "__main__":
-    cache_parse_depths_downsampled()
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
+    if mode == "full":
+        cache_parse_depths()
+    else:
+        sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+        cache_parse_depths_downsampled(sample_num=sample)

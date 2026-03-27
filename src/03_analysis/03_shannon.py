@@ -145,9 +145,13 @@ def analyze_entropy_downsampled(mode="WORD", sample_num=1):
     save_as_json(f"entropy/entropy_per_post_{mode.lower()}_sample{sample_num}.json", meta, res_posts)
 
 if __name__ == "__main__":
-    analyze_entropy_downsampled(mode="WORD", sample_num=1)
-    analyze_entropy_downsampled(mode="POS", sample_num=1)
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
+    if mode == "full":
+        analyze_entropy(mode="WORD")
+        analyze_entropy(mode="POS")
+    else:
+        sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+        analyze_entropy_downsampled(mode="WORD", sample_num=1)
+        analyze_entropy_downsampled(mode="POS", sample_num=1)
 
-"""if __name__ == "__main__":
-    analyze_entropy(mode="WORD")
-    analyze_entropy(mode="POS")"""

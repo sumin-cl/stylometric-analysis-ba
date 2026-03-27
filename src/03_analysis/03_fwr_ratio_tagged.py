@@ -90,4 +90,10 @@ def run_fwr_analysis_tagged_downsampled(sample_num=1):
     save_as_json("fwr_results_tagged.json", meta, res)
 
 if __name__ == "__main__":
-    run_fwr_analysis_tagged_downsampled()
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
+    if mode == "full":
+        run_fwr_analysis_tagged()
+    else:
+        sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+        run_fwr_analysis_tagged_downsampled(sample_num=sample)

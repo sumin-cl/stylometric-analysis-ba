@@ -39,5 +39,12 @@ def tag_and_save(input_name, output_name=None):
     print(f"Gespeichert: {output_path} ({len(df)} Zeilen)")
 
 if __name__ == "__main__":
-    tag_and_save("sample1_pre_n500.csv")
-    tag_and_save("sample1_post_n500.csv")
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
+    if mode == "full":
+        tag_and_save("corpus_a_cleaned.csv")
+        tag_and_save("corpus_b_cleaned.csv")
+    else:
+        sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+        tag_and_save("sample{sample}_pre_n500.csv")
+        tag_and_save("sample{sample}_post_n500.csv")

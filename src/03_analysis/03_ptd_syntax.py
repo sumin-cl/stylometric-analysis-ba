@@ -154,3 +154,14 @@ def run_significance_test(depths_a, depths_b, sample_num):
 if __name__ == "__main__":
     depths_a, depths_b, sample_num = run_syntax_analysis_downsampled()
     mwu_outcome = run_significance_test(depths_a, depths_b, sample_num)
+
+if __name__ == "__main__":
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
+    if mode == "full":
+        depths_a, depths_b = run_syntax_analysis()
+        mwu_outcome = run_significance_test(depths_a, depths_b)
+    else:
+        sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+        depths_a, depths_b, sample_num = run_syntax_analysis_downsampled(sample)
+        mwu_outcome = run_significance_test(depths_a, depths_b, sample_num)
