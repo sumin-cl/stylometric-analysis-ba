@@ -1,0 +1,7 @@
+I've been experimenting with fine-tuning large language models for a specific task and I'm looking for some advice from the community. I've taken a pre-trained model and added a custom dataset to fine-tune it for my use case, but I'm not seeing the results I was hoping for. The model is performing well on the training data, but it's not generalizing as well as I'd like to the test data.
+
+I've tried adjusting the learning rate, batch size, and number of epochs, but nothing seems to be making a significant difference. I'm wondering if anyone has any experience with fine-tuning large language models and can offer some tips or tricks. Are there any specific techniques or strategies that have worked well for you in the past?
+
+One thing I'm considering trying is using a smaller model and fine-tuning that instead, as I've heard that larger models can be more prone to overfitting. I'm also thinking about trying to add more data to the training set, or using data augmentation techniques to increase the diversity of the data.
+
+Any advice or suggestions would be greatly appreciated. I'm relatively new to working with large language models, so I'm still learning the ropes and figuring out what works best. I'd love to hear from anyone who has experience with fine-tuning these models and can offer some guidance or recommendations.

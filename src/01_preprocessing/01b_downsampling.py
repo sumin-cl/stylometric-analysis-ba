@@ -3,11 +3,10 @@ import pandas as pd
 from utils.paths import PROCESSED
 from pathlib import Path
 
-# Hier trägst du später einfach dein LLM-Korpus ein
 CORPORA = {
     "pre": PROCESSED / "corpus_a_cleaned.csv",
     "post": PROCESSED / "corpus_b_cleaned.csv",
-    "llm": PROCESSED / "corpus_llm_cleaned.csv"  # <- Platzhalter für dein 3. Korpus
+#    "llm": PROCESSED / "corpus_llm_cleaned.csv"  
 }
 
 SEEDS = [42, 43, 44]

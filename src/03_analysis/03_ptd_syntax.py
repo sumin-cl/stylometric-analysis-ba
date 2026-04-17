@@ -120,7 +120,7 @@ from scipy.stats import mannwhitneyu
 import numpy as np
 from utils.nlp_utils import append_to_json
 
-def run_significance_test(depths_a, depths_b, sample_num):
+def run_significance_test(depths_a, depths_b, sample_num=None):
     """
     Führt einen zweiseitigen Mann-Whitney-U-Test auf den Baumtiefe-Verteilungen durch.
     Fügt U-Statistik, p-Wert und rangbiserialen Effektgröße r an syntax_parse_depth.json an.
@@ -142,18 +142,12 @@ def run_significance_test(depths_a, depths_b, sample_num):
     mean_diff = np.mean(depths_a) - np.mean(depths_b)
     print(f"Absolute Differenz der Mittelwerte: {mean_diff:.4f}")
 
-    append_to_json(
-        f"syntax_parse_depth_sample{sample_num}.json",
-        {
-            "mann_whitney_u": float(stat),
-            "p_value": float(p_val),
-            "effect_size_r": abs(stat) / (len(depths_a) * len(depths_b))**0.5
-        }
-    )
-
-if __name__ == "__main__":
-    depths_a, depths_b, sample_num = run_syntax_analysis_downsampled()
-    mwu_outcome = run_significance_test(depths_a, depths_b, sample_num)
+    filename = f"syntax_parse_depth_sample{sample_num}.json" if sample_num else "syntax_parse_depth.json"
+    append_to_json(filename, {
+        "mann_whitney_u": float(stat),
+        "p_value": float(p_val),
+        "effect_size_r": abs(stat) / (len(depths_a) * len(depths_b))**0.5
+    })
 
 if __name__ == "__main__":
     import sys

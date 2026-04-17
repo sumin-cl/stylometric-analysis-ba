@@ -46,5 +46,5 @@ if __name__ == "__main__":
         tag_and_save("corpus_b_cleaned.csv")
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-        tag_and_save("sample{sample}_pre_n500.csv")
-        tag_and_save("sample{sample}_post_n500.csv")
+        tag_and_save(f"sample{sample}_pre_n500.csv")
+        tag_and_save(f"sample{sample}_post_n500.csv")

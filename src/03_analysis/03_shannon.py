@@ -152,6 +152,6 @@ if __name__ == "__main__":
         analyze_entropy(mode="POS")
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-        analyze_entropy_downsampled(mode="WORD", sample_num=1)
-        analyze_entropy_downsampled(mode="POS", sample_num=1)
+        analyze_entropy_downsampled(mode="WORD", sample_num=sample)
+        analyze_entropy_downsampled(mode="POS", sample_num=sample)
 
