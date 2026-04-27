@@ -27,7 +27,7 @@ def generate_llm_corpus():
         subreddit = row['subreddit']
         title = row['title']
         
-        # Der Prompt: Zwingt das Modell, im Reddit-Stil zu schreiben
+        # Der Prompt
         prompt = (
             f"Write a normal, everyday Reddit post for the subreddit r/{subreddit} "
             f"with the title '{title}'. "

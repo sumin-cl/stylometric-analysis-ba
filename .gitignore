@@ -7,3 +7,4 @@ src/deprecated/
 *.csv
 r_machinelearning_posts.jsonl
 .env
+test_openai.py

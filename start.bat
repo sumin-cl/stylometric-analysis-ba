@@ -24,7 +24,6 @@ echo.
 echo  --- Synthetic Corpus Generation ---
 echo  [6] Topic Extraction (Cleaned Full Corpus)
 echo  [6a,b,c] Topic Extraction (Downsampled)
-echo  [66,6aa,bb,cc] LLM-Korpus Generierung (Not implemented yet!)
 echo  [6h]  Topic Validation (HTML Report, auto)
 echo  [6hm] Topic Validation (HTML Report, manuell)
 echo  [6bat]  Topic Batch Analysis (HTML + Plots)
@@ -33,6 +32,10 @@ echo  [61a] Generate Prompts (Style A)
 echo  [61b] Generate Prompts (Style B)
 echo  [61c] Generate Prompts (Style C)
 echo  - LLM Corpus Generation -
+echo  To be able to use this, a OpenAI (or any other) API key is required. 
+echo  In order to apply it, enter $env:OPENAI_API_KEY="dein-key-hier" into your Powershell Session.
+echo  Otherwise, enter setx OPENAI_API_KEY "dein-key-hier" in order to set it as your system variable.
+echo  [62] Go to Generate Synthetic Corpus Menu
 echo.
 echo  --- EDA ---
 echo  [6x]  Baseline-Analyse
@@ -55,6 +58,8 @@ echo.
 echo  [15] Downsampling
 echo.
 echo  [groq] Groq-Test
+echo  [test] Test OpenAI API Key
+echo  [single] Generate Single File
 echo.
 echo  [q]  Beenden
 echo.
@@ -130,10 +135,7 @@ if "%choice%"=="61c" (
     python src\02_generation\02b_prompt_template_generator.py C %count%
     goto done
 )
-if "%choice%"=="66"  python src\02_generation\02_topic_extraction.py downsampled 1                  & goto done
-if "%choice%"=="6aa"  python src\02_generation\02_topic_extraction.py downsampled 1                  & goto done
-if "%choice%"=="6bb"  python src\02_generation\02_topic_extraction.py downsampled 2                  & goto done
-if "%choice%"=="6cc"  python src\02_generation\02_topic_extraction.py downsampled 3                  & goto done
+if "%choice%"=="62" goto generate_corpus
 if "%choice%"=="6x"  python src\02_eda\02_baseline.py                   & goto done
 if "%choice%"=="7"  python src\03_analysis\03_mtld_analysis.py full        & goto done
 if "%choice%"=="7a" python src\03_analysis\03_mtld_analysis.py downsampled 1 & goto done
@@ -160,6 +162,9 @@ if "%choice%"=="13" python src\04_visualization\04_sign_all.py         & goto do
 if "%choice%"=="14" python src\04_visualization\04_visualization.py    & goto done
 if "%choice%"=="15" python src\01_preprocessing\01b_downsampling.py    & goto done
 if "%choice%"=="groq" python test_groq.py    & goto done
+if "%choice%"=="test" python test_openai.py & goto done
+if "%choice%"=="single" python src\02_generation\generate_single_from_file.py & goto done
+
 if /i "%choice%"=="q" exit /b
 
 echo Ungueltige Eingabe.
@@ -167,5 +172,34 @@ goto menu
 
 :done
 echo.
+pause
+goto menu
+
+:generate_corpus
+echo ============================================
+echo   Synthetic Corpus Generation
+echo ============================================
+echo.
+echo Select style:
+echo   [A] Style A (Abstract ML)
+echo   [B] Style B (Reddit-like)
+echo   [C] Style C (Paper-Abstract)
+echo.
+
+set /p style="Enter choice (A/B/C): "
+
+if /I "%style%"=="A" set PROMPT_FILE=prompts_style_A_500.jsonl
+if /I "%style%"=="B" set PROMPT_FILE=prompts_style_B_500.jsonl
+if /I "%style%"=="C" set PROMPT_FILE=prompts_style_C_500.jsonl
+
+echo Using prompt file: %PROMPT_FILE%
+echo.
+
+call venv\Scripts\activate
+
+python src\02_generation\synthetic_text_generator.py GENERATED\prompts\%PROMPT_FILE%
+
+echo.
+echo Done.
 pause
 goto menu
