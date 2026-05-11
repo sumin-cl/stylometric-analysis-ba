@@ -2,7 +2,8 @@
 import pandas as pd
 import numpy as np
 from utils.nlp_utils import calculate_fwr_per_doc, save_as_json
-from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES
+from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
+                        RESULTS_FWR_FULL, RESULTS_FWR_FILTERED, RESULTS_FWR_SAMPLES
 
 def run_fwr_analysis(input_a="corpus_a_cleaned.csv", input_b="corpus_b_cleaned.csv"):
     """
@@ -54,7 +55,7 @@ def run_fwr_analysis(input_a="corpus_a_cleaned.csv", input_b="corpus_b_cleaned.c
         "std_fwr_a": float(np.std(fwr_a)),
         "std_fwr_b": float(np.std(fwr_b))
     }
-    save_as_json("fwr_results.json", meta, res)
+    save_as_json("fwr_results.json", meta, res, output_dir=RESULTS_FWR_FULL)
 
 def run_fwr_analysis_downsampled(sample_num=1):
     """
@@ -102,7 +103,7 @@ def run_fwr_analysis_downsampled(sample_num=1):
         "std_fwr_a": float(np.std(fwr_a)),
         "std_fwr_b": float(np.std(fwr_b))
     }
-    save_as_json(f"fwr_results_sample{sample_num}.json", meta, res)
+    save_as_json(f"fwr_results_sample{sample_num}.json", meta, res, output_dir=RESULTS_FWR_SAMPLES)
 
 
 def run_fwr_analysis_filtered():
@@ -154,7 +155,7 @@ def run_fwr_analysis_filtered():
         "std_fwr_a": float(np.std(fwr_a)),
         "std_fwr_b": float(np.std(fwr_b))
     }
-    save_as_json("fwr_results_filtered.json", meta, res)
+    save_as_json("fwr_results_filtered.json", meta, res, output_dir=RESULTS_FWR_FILTERED)
 
 
 if __name__ == "__main__":

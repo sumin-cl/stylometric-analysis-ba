@@ -2,7 +2,8 @@
 import pandas as pd
 import numpy as np
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
-                        PARSED_FULL, PARSED_FILTERED, PARSED_SAMPLES
+                        PARSED_FULL, PARSED_FILTERED, PARSED_SAMPLES, \
+                        RESULTS_PTD_FULL, RESULTS_PTD_FILTERED, RESULTS_PTD_SAMPLES
 from utils.nlp_utils import analyze_syntax_complexity, save_as_json
 import json
 
@@ -66,7 +67,7 @@ def run_syntax_analysis():
         "mean_ptd_b": float(mean_b),
         "diff_ptd": float(diff)
     }
-    save_as_json(f"syntax_parse_depth.json", meta, res)
+    save_as_json("syntax_parse_depth.json", meta, res, output_dir=RESULTS_PTD_FULL)
 
     return depths_a, depths_b
 
@@ -119,7 +120,7 @@ def run_syntax_analysis_downsampled(sample_num=1):
         "mean_ptd_b": mean_b,
         "diff_ptd": diff
     }
-    save_as_json(f"syntax_parse_depth_sample{sample_num}.json", meta, res)
+    save_as_json(f"syntax_parse_depth_sample{sample_num}.json", meta, res, output_dir=RESULTS_PTD_SAMPLES)
 
     return depths_a, depths_b, sample_num
 
@@ -182,7 +183,7 @@ def run_syntax_analysis_filtered():
         "mean_ptd_b": float(mean_b),
         "diff_ptd": float(diff)
     }
-    save_as_json("syntax_parse_depth_filtered.json", meta, res)
+    save_as_json("syntax_parse_depth_filtered.json", meta, res, output_dir=RESULTS_PTD_FILTERED)
 
     return depths_a, depths_b
 
@@ -217,16 +218,19 @@ def run_significance_test(depths_a, depths_b, sample_num=None, layer=None):
 
     if layer == "filtered":
         filename = "syntax_parse_depth_filtered.json"
+        out_dir = RESULTS_PTD_FILTERED
     elif sample_num is not None:
         filename = f"syntax_parse_depth_sample{sample_num}.json"
+        out_dir = RESULTS_PTD_SAMPLES
     else:
         filename = "syntax_parse_depth.json"
+        out_dir = RESULTS_PTD_FULL
 
     append_to_json(filename, {
         "mann_whitney_u": float(stat),
         "p_value": float(p_val),
         "effect_size_r": abs(stat) / (len(depths_a) * len(depths_b))**0.5
-    })
+    }, output_dir=out_dir)
 
 if __name__ == "__main__":
     import sys

@@ -2,7 +2,8 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import mannwhitneyu
-from utils.paths import FINAL, TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES
+from utils.paths import FINAL, TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES, \
+                        RESULTS_FWR_FULL, RESULTS_FWR_FILTERED, RESULTS_FWR_SAMPLES
 from utils.nlp_utils import save_as_json
 
 def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tagged.csv"):
@@ -45,7 +46,7 @@ def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tag
     }
     
     print(f"Ergebnis: p={p_val:.10f}")
-    save_as_json("fwr_results_tagged.json", meta, res)
+    save_as_json("fwr_results_tagged.json", meta, res, output_dir=RESULTS_FWR_FULL)
 
 def run_fwr_analysis_tagged_downsampled(sample_num=1):
     """
@@ -88,7 +89,7 @@ def run_fwr_analysis_tagged_downsampled(sample_num=1):
     }
     
     print(f"Ergebnis: p={p_val:.10f}")
-    save_as_json(f"fwr_results_tagged_sample{sample_num}.json", meta, res)
+    save_as_json(f"fwr_results_tagged_sample{sample_num}.json", meta, res, output_dir=RESULTS_FWR_SAMPLES)
 
 
 def run_fwr_analysis_tagged_filtered():
@@ -138,7 +139,7 @@ def run_fwr_analysis_tagged_filtered():
     }
 
     print(f"Ergebnis: p={p_val:.10f}")
-    save_as_json("fwr_results_tagged_filtered.json", meta, res)
+    save_as_json("fwr_results_tagged_filtered.json", meta, res, output_dir=RESULTS_FWR_FILTERED)
 
 
 if __name__ == "__main__":

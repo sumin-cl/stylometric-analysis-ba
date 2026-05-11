@@ -3,7 +3,8 @@ import pandas as pd
 from collections import Counter
 from lexical_diversity import lex_div as ld
 from tqdm import tqdm
-from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES
+from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
+                        RESULTS_MTLD_FULL, RESULTS_MTLD_FILTERED, RESULTS_MTLD_SAMPLES
 from utils.nlp_utils import save_as_json
 
 def chunk_tokens(tokens, chunk_size=500):
@@ -56,7 +57,7 @@ def mtld_analysis(chunk_size=500):
         "diff_mtld_filtered": float(mtld_b_filt - mtld_a)
     }
     
-    save_as_json(f"mtld_alignment_results.json", meta, res)
+    save_as_json("mtld_alignment_results.json", meta, res, output_dir=RESULTS_MTLD_FULL)
 
     mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A")]
     mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B")]
@@ -67,11 +68,11 @@ def mtld_analysis(chunk_size=500):
         "mtld_chunks_b": mtld_chunks_b,
         "mtld_chunks_b_filtered": mtld_chunks_b_filtered
     }
-    save_as_json(f"mtld_chunks_results.json", meta, res_chunks)
+    save_as_json("mtld_chunks_results.json", meta, res_chunks, output_dir=RESULTS_MTLD_FULL)
 
 def mtld_analysis_downsampled(sample_num=1, chunk_size=500):
     """
-    Berechnet MTLD für vorbereitete Downsampling-Samples (n=500, 100-400 Tokens).
+    Berechnet MTLD für vorbereitete Downsampling-Samples (n=500, 150-300 Tokens).
     Analog zu mtld_analysis(), aber ohne internes Sampling — die Samples sind bereits
     balanciert und gefiltert. Berechnet zusätzlich einen vokabulargefilterten MTLD
     für Korpus B (nur Typen mit min. 3 Vorkommen in A) zur Kontrolle des Topic-Shifts.
@@ -114,7 +115,7 @@ def mtld_analysis_downsampled(sample_num=1, chunk_size=500):
         "mtld_b_filtered": float(mtld_b_filt),
         "diff_mtld_filtered": float(mtld_b_filt - mtld_a)
     }
-    save_as_json(f"mtld_results_sample{sample_num}.json", meta, res)
+    save_as_json(f"mtld_results_sample{sample_num}.json", meta, res, output_dir=RESULTS_MTLD_SAMPLES)
  
     mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A")]
     mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B")]
@@ -125,7 +126,7 @@ def mtld_analysis_downsampled(sample_num=1, chunk_size=500):
         "mtld_chunks_b": mtld_chunks_b,
         "mtld_chunks_b_filtered": mtld_chunks_b_filtered
     }
-    save_as_json(f"mtld_chunks_sample{sample_num}.json", meta, res_chunks)
+    save_as_json(f"mtld_chunks_sample{sample_num}.json", meta, res_chunks, output_dir=RESULTS_MTLD_SAMPLES)
 
 
 def mtld_analysis_filtered(chunk_size=500):
@@ -174,7 +175,7 @@ def mtld_analysis_filtered(chunk_size=500):
         "mtld_b_filtered": float(mtld_b_filt),
         "diff_mtld_filtered": float(mtld_b_filt - mtld_a)
     }
-    save_as_json("mtld_alignment_filtered.json", meta, res)
+    save_as_json("mtld_alignment_filtered.json", meta, res, output_dir=RESULTS_MTLD_FILTERED)
 
     mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A (Filt)")]
     mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B (Filt)")]
@@ -185,7 +186,7 @@ def mtld_analysis_filtered(chunk_size=500):
         "mtld_chunks_b": mtld_chunks_b,
         "mtld_chunks_b_filtered": mtld_chunks_b_filtered
     }
-    save_as_json("mtld_chunks_filtered.json", meta, res_chunks)
+    save_as_json("mtld_chunks_filtered.json", meta, res_chunks, output_dir=RESULTS_MTLD_FILTERED)
 
 
 if __name__ == "__main__":

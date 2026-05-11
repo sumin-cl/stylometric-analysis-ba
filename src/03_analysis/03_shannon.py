@@ -2,7 +2,8 @@
 import pandas as pd
 from utils.nlp_utils import nlp, save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
-                        TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES
+                        TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES, \
+                        RESULTS_SHANNON_FULL, RESULTS_SHANNON_FILTERED, RESULTS_SHANNON_SAMPLES
 from tqdm import tqdm
 
 
@@ -106,7 +107,7 @@ def analyze_entropy(mode="WORD"):
         "diff_entropy_filtered": float(diff_filt)
     }
 
-    save_as_json(f"entropy_{mode.lower()}.json", meta, res_global)
+    save_as_json(f"entropy_{mode.lower()}.json", meta, res_global, output_dir=RESULTS_SHANNON_FULL)
 
     df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
     df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
@@ -116,7 +117,7 @@ def analyze_entropy(mode="WORD"):
         "entropy_per_post_b": df_b["entropy_post"].tolist()
     }
 
-    save_as_json(f"entropy/entropy_per_post_{mode.lower()}.json", meta, res_posts)
+    save_as_json(f"entropy_per_post_{mode.lower()}.json", meta, res_posts, output_dir=RESULTS_SHANNON_FULL)
 
 def analyze_entropy_downsampled(mode="WORD", sample_num=1):
     """
@@ -176,7 +177,7 @@ def analyze_entropy_downsampled(mode="WORD", sample_num=1):
         "diff_entropy_filtered": float(diff_filt)
     }
 
-    save_as_json(f"entropy_{mode.lower()}_sample{sample_num}.json", meta, res_global)
+    save_as_json(f"entropy_{mode.lower()}_sample{sample_num}.json", meta, res_global, output_dir=RESULTS_SHANNON_SAMPLES)
 
     df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
     df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
@@ -186,7 +187,7 @@ def analyze_entropy_downsampled(mode="WORD", sample_num=1):
         "entropy_per_post_b": df_b["entropy_post"].tolist()
     }
 
-    save_as_json(f"entropy/entropy_per_post_{mode.lower()}_sample{sample_num}.json", meta, res_posts)
+    save_as_json(f"entropy_per_post_{mode.lower()}_sample{sample_num}.json", meta, res_posts, output_dir=RESULTS_SHANNON_SAMPLES)
 
 
 def analyze_entropy_filtered(mode="WORD"):
@@ -248,7 +249,7 @@ def analyze_entropy_filtered(mode="WORD"):
         "diff_entropy_filtered": float(diff_filt)
     }
 
-    save_as_json(f"entropy_{mode.lower()}_filtered.json", meta, res_global)
+    save_as_json(f"entropy_{mode.lower()}_filtered.json", meta, res_global, output_dir=RESULTS_SHANNON_FILTERED)
 
     df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
     df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
@@ -258,7 +259,7 @@ def analyze_entropy_filtered(mode="WORD"):
         "entropy_per_post_b": df_b["entropy_post"].tolist()
     }
 
-    save_as_json(f"entropy/entropy_per_post_{mode.lower()}_filtered.json", meta, res_posts)
+    save_as_json(f"entropy_per_post_{mode.lower()}_filtered.json", meta, res_posts, output_dir=RESULTS_SHANNON_FILTERED)
 
 
 if __name__ == "__main__":
