@@ -11,7 +11,7 @@ Verwendung:
 """
 import pandas as pd
 from utils.cleanup import clean_reddit_text
-from utils.paths import FINAL, EXTRACTED, PROCESSED
+from utils.paths import FINAL, EXTRACTED, PROCESSED_FULL
 from pathlib import Path
 import sys
 

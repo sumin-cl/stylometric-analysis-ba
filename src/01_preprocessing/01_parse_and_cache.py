@@ -26,6 +26,17 @@ def cache_parse_depths_downsampled(sample_num=1):
         print(f"Gespeichert: {out_path}")
 
 
+def cache_parse_depths_filtered():
+    """Reddit-Korpora nach Token-Filter (Primaeranalyse-Layer)."""
+    for corpus in ["corpus_a_filtered.csv", "corpus_b_filtered.csv"]:
+        df = pd.read_csv(PROCESSED_FILTERED / corpus)
+        depths = analyze_syntax_complexity(df["text"])
+        out_path = PARSED_FILTERED / (corpus.replace(".csv", "_parsed_depths.json"))
+        with open(out_path, "w") as f:
+            json.dump(depths, f)
+        print(f"Gespeichert: {out_path}")
+
+
 def cache_parse_depths_llm():
     corpus = "corpus_c_filtered.csv"
     df = pd.read_csv(PROCESSED_FILTERED / corpus)
@@ -41,6 +52,8 @@ if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
     if mode == "full":
         cache_parse_depths()
+    elif mode == "filtered":
+        cache_parse_depths_filtered()
     elif mode == "llm":
         cache_parse_depths_llm()
     else:

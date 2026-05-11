@@ -7,8 +7,8 @@ Input:  data/final/01_processed/full/corpus_*_cleaned.csv
 Output: data/final/01_processed/filtered/corpus_*_filtered.csv
 
 Verwendung:
-    python src/01_preprocessing/01b_filter.py           # Standard: 150-300
-    python src/01_preprocessing/01b_filter.py 100 400   # Eigene Grenzen
+    python src/01_preprocessing/01b_filter.py           # Standard: 100-400
+    python src/01_preprocessing/01b_filter.py 150 300   # Eigene Grenzen
 """
 import sys
 import pandas as pd
@@ -20,7 +20,7 @@ CORPORA = {
 }
 
 
-def filter_corpora(min_tokens=150, max_tokens=300):
+def filter_corpora(min_tokens=100, max_tokens=400):
     print(f"\n=== FILTER: {min_tokens}–{max_tokens} Tokens ===\n")
 
     for name, filename in CORPORA.items():
@@ -53,7 +53,7 @@ if __name__ == "__main__":
             print("[FEHLER] Argumente muessen Ganzzahlen sein.")
             sys.exit(1)
     elif len(sys.argv) == 1:
-        min_t, max_t = 150, 300
+        min_t, max_t = 100, 400
     else:
         print("Verwendung: python 01b_filter.py [min_tokens max_tokens]")
         sys.exit(1)

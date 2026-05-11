@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import mannwhitneyu
-from utils.paths import FINAL, TAGGED
+from utils.paths import FINAL, TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES
 from utils.nlp_utils import save_as_json
 
 def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tagged.csv"):
@@ -11,8 +11,8 @@ def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tag
     Führt einen zweiseitigen Mann-Whitney-U-Test auf den dokumentweisen FWR-Verteilungen durch.
     Speichert Ergebnisse inkl. p-Wert und Signifikanz-Flag in fwr_results.json.
     """
-    path_a = TAGGED / input_a
-    path_b = TAGGED / input_b
+    path_a = TAGGED_FULL / input_a
+    path_b = TAGGED_FULL / input_b
 
     df_a = pd.read_csv(path_a)
     df_b = pd.read_csv(path_b)
@@ -53,8 +53,8 @@ def run_fwr_analysis_tagged_downsampled(sample_num=1):
     Führt einen zweiseitigen Mann-Whitney-U-Test auf den dokumentweisen FWR-Verteilungen durch.
     Speichert Ergebnisse inkl. p-Wert und Signifikanz-Flag in fwr_results.json.
     """
-    path_a = TAGGED / f"sample{sample_num}_pre_n500_tagged.csv"
-    path_b = TAGGED / f"sample{sample_num}_post_n500_tagged.csv"
+    path_a = TAGGED_SAMPLES / f"sample{sample_num}_pre_n500_tagged.csv"
+    path_b = TAGGED_SAMPLES / f"sample{sample_num}_post_n500_tagged.csv"
 
     df_a = pd.read_csv(path_a)
     df_b = pd.read_csv(path_b)
@@ -75,6 +75,7 @@ def run_fwr_analysis_tagged_downsampled(sample_num=1):
 
     meta = {
         "mode": "fwr_tagged",
+        "sample_num": sample_num,
         "source_files": [str(path_a), str(path_b)]
     }
 
@@ -87,13 +88,66 @@ def run_fwr_analysis_tagged_downsampled(sample_num=1):
     }
     
     print(f"Ergebnis: p={p_val:.10f}")
-    save_as_json("fwr_results_tagged.json", meta, res)
+    save_as_json(f"fwr_results_tagged_sample{sample_num}.json", meta, res)
+
+
+def run_fwr_analysis_tagged_filtered():
+    """
+    Berechnet FWR auf den vor-getaggten, token-laengen-gefilterten Reddit-Korpora
+    (Primaeranalyse-Layer, tagged). Liest aus TAGGED_FILTERED.
+    Subsampelt auf min(n_a, n_b) fuer Vergleichbarkeit, fuehrt Mann-Whitney-U-Test durch.
+    """
+    path_a = TAGGED_FILTERED / "corpus_a_filtered_tagged.csv"
+    path_b = TAGGED_FILTERED / "corpus_b_filtered_tagged.csv"
+
+    df_a = pd.read_csv(path_a)
+    df_b = pd.read_csv(path_b)
+
+    min_len = min(len(df_a), len(df_b))
+    print(f"Sampling auf {min_len} Posts...")
+    df_a = df_a.sample(n=min_len, random_state=42)
+    df_b = df_b.sample(n=min_len, random_state=42)
+
+    func_tags = {'PRON', 'DET', 'ADP', 'CCONJ', 'SCONJ', 'PART'}
+
+    def get_fwr(pos_string):
+        tags = str(pos_string).split()
+        if not tags: return 0
+        func_count = sum(1 for t in tags if t in func_tags)
+        return func_count / len(tags)
+
+    print("Berechne FWR aus POS-Tags (filtered)...")
+    fwr_a = df_a['pos_tags'].apply(get_fwr).tolist()
+    fwr_b = df_b['pos_tags'].apply(get_fwr).tolist()
+
+    stat, p_val = mannwhitneyu(fwr_a, fwr_b, alternative='two-sided')
+
+    meta = {
+        "sample_size": min_len,
+        "mode": "fwr_tagged",
+        "layer": "filtered",
+        "source_files": [str(path_a), str(path_b)]
+    }
+
+    res = {
+        "mean_fwr_a": float(np.mean(fwr_a)),
+        "mean_fwr_b": float(np.mean(fwr_b)),
+        "p_value": float(p_val),
+        "u_stat": float(stat),
+        "significant": bool(p_val < 0.05)
+    }
+
+    print(f"Ergebnis: p={p_val:.10f}")
+    save_as_json("fwr_results_tagged_filtered.json", meta, res)
+
 
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
     if mode == "full":
         run_fwr_analysis_tagged()
+    elif mode == "filtered":
+        run_fwr_analysis_tagged_filtered()
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
         run_fwr_analysis_tagged_downsampled(sample_num=sample)

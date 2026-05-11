@@ -40,6 +40,10 @@ if __name__ == "__main__":
         """Vollkorpus (alle Tokenlängen) — optional, nicht im Launcher."""
         tag_and_save(PROCESSED_FULL / "corpus_a_cleaned.csv", TAGGED_FULL)
         tag_and_save(PROCESSED_FULL / "corpus_b_cleaned.csv", TAGGED_FULL)
+    elif mode == "filtered":
+        """Reddit-Korpora nach Token-Filter (Primaeranalyse-Layer)."""
+        tag_and_save(PROCESSED_FILTERED / "corpus_a_filtered.csv", TAGGED_FILTERED)
+        tag_and_save(PROCESSED_FILTERED / "corpus_b_filtered.csv", TAGGED_FILTERED)
     elif mode == "llm":
         tag_and_save(PROCESSED_FILTERED / "corpus_c_filtered.csv", TAGGED_FILTERED)
     else:

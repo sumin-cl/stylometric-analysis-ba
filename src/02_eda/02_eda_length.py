@@ -7,13 +7,13 @@ Output: data/final/02_eda/length_distribution.html
 """
 import pandas as pd
 import plotly.graph_objects as go
-from utils.paths import PROCESSED, EDA
+from utils.paths import PROCESSED_FULL, EDA
 
 
 def run_length_eda():
     print("Lade Korpora...")
-    df_a = pd.read_csv(PROCESSED / "corpus_a_cleaned.csv")
-    df_b = pd.read_csv(PROCESSED / "corpus_b_cleaned.csv")
+    df_a = pd.read_csv(PROCESSED_FULL / "corpus_a_cleaned.csv")
+    df_b = pd.read_csv(PROCESSED_FULL / "corpus_b_cleaned.csv")
 
     df_a['tokens'] = df_a['text'].astype(str).str.split().str.len()
     df_b['tokens'] = df_b['text'].astype(str).str.split().str.len()
@@ -31,7 +31,7 @@ def run_length_eda():
         "Corpus B (Post)": counts_b.values,
     })
 
-    # Nur Zeilen mit mindestens einem Post
+    # Nur Zeilen mit mindestens einem Post anzeigen
     table = table[(table["Corpus A (Pre)"] > 0) | (table["Corpus B (Post)"] > 0)]
     print("\nToken-Längenverteilung (Bins à 50):")
     print(table.to_string(index=False))
@@ -66,6 +66,7 @@ def run_length_eda():
         opacity=0.7,
     ))
 
+    # Markierung des aktuellen Analysefensters
     fig.add_vrect(
         x0=150, x1=300,
         fillcolor="gold", opacity=0.12,

@@ -27,11 +27,13 @@ GENERATED_REPORTS = GENERATED / "reports"
 
 # ── 03 Tagged ─────────────────────────────────────────────────────────────────
 TAGGED          = FINAL / "03_tagged"
+TAGGED_FULL     = TAGGED / "full"       # corpus_*_tagged.csv  (Vollkorpus, optional)
 TAGGED_FILTERED = TAGGED / "filtered"   # corpus_*_filtered_tagged.csv
 TAGGED_SAMPLES  = TAGGED / "samples"    # sample{N}_{pre/post}_n500_tagged.csv
 
 # ── 04 Parsed ─────────────────────────────────────────────────────────────────
 PARSED          = FINAL / "04_parsed"
+PARSED_FULL     = PARSED / "full"       # corpus_*_cleaned_parsed_depths.json  (Vollkorpus, optional)
 PARSED_FILTERED = PARSED / "filtered"   # corpus_*_filtered_parsed_depths.json
 PARSED_SAMPLES  = PARSED / "samples"    # sample{N}_{pre/post}_n500_parsed_depths.json
 
@@ -49,8 +51,8 @@ for p in [
     PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES,
     EDA,
     GENERATED_PROMPTS, GENERATED_TOPICS, GENERATED_CORPUS, GENERATED_REPORTS,
-    TAGGED_FILTERED, TAGGED_SAMPLES,
-    PARSED_FILTERED, PARSED_SAMPLES,
+    TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES,
+    PARSED_FULL, PARSED_FILTERED, PARSED_SAMPLES,
     RESULTS_MTLD, RESULTS_SHANNON, RESULTS_FWR, RESULTS_PTD, RESULTS_SIGNIF,
 ]:
     p.mkdir(parents=True, exist_ok=True)
