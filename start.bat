@@ -174,7 +174,7 @@ if "%choice%"=="3" goto prompt_gen
 if "%choice%"=="4" goto llm_gen
 if "%choice%"=="5" python src\00_extraction\00_extract_c_from_jsonl.py      & goto done_synthetic
 if "%choice%"=="6" python src\01_preprocessing\01_preprocess.py llm         & goto done_synthetic
-if "%choice%"=="7" python src\01_preprocessing\01b_filter.py                & goto done_synthetic
+if "%choice%"=="7" python src\01_preprocessing\01b_filter.py llm            & goto done_synthetic
 if "%choice%"=="8" python src\01_preprocessing\01b_pos_tagger.py llm        & goto done_synthetic
 if "%choice%"=="9" python src\01_preprocessing\01_parse_and_cache.py llm    & goto done_synthetic
 if /i "%choice%"=="B" goto menu
