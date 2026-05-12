@@ -1,0 +1,18 @@
+{
+    "timestamp": "2026-05-12T08:47:11.466824",
+    "metadata": {
+        "sample_size": 500,
+        "sample_num": 3,
+        "mode": "mtld",
+        "source_files": [
+            "sample3_pre_n500.csv",
+            "sample3_post_n500.csv"
+        ]
+    },
+    "results": {
+        "mtld_a_standard": 114.99640764835351,
+        "mtld_b_standard": 155.66217170906407,
+        "mtld_b_filtered": 84.5776836278548,
+        "diff_mtld_filtered": -30.418724020498715
+    }
+}

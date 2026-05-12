@@ -1,0 +1,19 @@
+{
+    "timestamp": "2026-05-12T08:47:54.031850",
+    "metadata": {
+        "sample_size": 8848,
+        "mode": "WORD",
+        "layer": "filtered",
+        "tagging_source": "pre_tagged",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\03_tagged\\filtered\\corpus_a_filtered_tagged.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\03_tagged\\filtered\\corpus_b_filtered_tagged.csv"
+        ]
+    },
+    "results": {
+        "entropy_a": 10.831213678443374,
+        "entropy_b": 11.036312129147817,
+        "diff_entropy_raw": 0.20509845070444221,
+        "diff_entropy_filtered": -0.5414299569565415
+    }
+}

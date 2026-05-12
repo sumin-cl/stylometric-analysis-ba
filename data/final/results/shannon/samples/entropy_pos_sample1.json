@@ -1,0 +1,19 @@
+{
+    "timestamp": "2026-05-12T08:48:29.563587",
+    "metadata": {
+        "sample_size": 500,
+        "mode": "POS",
+        "sample_num": 1,
+        "tagging_source": "pre_tagged",
+        "source_files": [
+            "sample1_pre_n500_tagged.csv",
+            "sample1_post_n500_tagged.csv"
+        ]
+    },
+    "results": {
+        "entropy_a": 3.5613112400566775,
+        "entropy_b": 3.55862616256507,
+        "diff_entropy_raw": -0.0026850774916074016,
+        "diff_entropy_filtered": -0.0026850774916074016
+    }
+}

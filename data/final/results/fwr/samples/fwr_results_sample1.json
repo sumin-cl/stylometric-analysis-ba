@@ -1,0 +1,18 @@
+{
+    "timestamp": "2026-05-12T08:57:25.455091",
+    "metadata": {
+        "sample_size": 500,
+        "mode": "fwr",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\samples\\sample1_pre_n500.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\samples\\sample1_post_n500.csv"
+        ]
+    },
+    "results": {
+        "mean_fwr_a": 0.8392063117663129,
+        "mean_fwr_b": 0.8064592855074709,
+        "diff_fwr": -0.03274702625884196,
+        "std_fwr_a": 0.24700021790659007,
+        "std_fwr_b": 0.24865676619091354
+    }
+}

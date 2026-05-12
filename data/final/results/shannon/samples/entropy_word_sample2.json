@@ -1,0 +1,19 @@
+{
+    "timestamp": "2026-05-12T08:48:31.297270",
+    "metadata": {
+        "sample_size": 500,
+        "mode": "WORD",
+        "sample_num": 2,
+        "tagging_source": "pre_tagged",
+        "source_files": [
+            "sample2_pre_n500_tagged.csv",
+            "sample2_post_n500_tagged.csv"
+        ]
+    },
+    "results": {
+        "entropy_a": 10.457348597119685,
+        "entropy_b": 10.703246041170837,
+        "diff_entropy_raw": 0.24589744405115255,
+        "diff_entropy_filtered": -1.3300557250389549
+    }
+}

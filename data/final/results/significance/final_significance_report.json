@@ -1,0 +1,16 @@
+{
+    "timestamp": "2026-03-11T11:53:42.285924",
+    "metadata": {
+        "mode": "all_metrics",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\03_tagged\\corpus_a_tagged.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\03_tagged\\corpus_b_tagged.csv"
+        ]
+    },
+    "results": {
+        "text_length": {
+            "u_stat": 174344201.0,
+            "p_value": 1.4138380445086675e-42
+        }
+    }
+}

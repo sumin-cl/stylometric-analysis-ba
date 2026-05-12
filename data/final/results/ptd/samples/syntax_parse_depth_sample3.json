@@ -1,0 +1,20 @@
+{
+    "timestamp": "2026-05-12T08:37:20.009655",
+    "metadata": {
+        "sample_size": 500,
+        "mode": "parse_tree_depth",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\samples\\sample3_pre_n500.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\samples\\sample3_post_n500.csv"
+        ]
+    },
+    "results": {
+        "mean_ptd_a": 5.5170876390759425,
+        "mean_ptd_b": 5.4821665591983395,
+        "diff_ptd": -0.034921079877602956,
+        "mann_whitney_u": 127969.5,
+        "p_value": 0.5155485269521118,
+        "effect_size_r": 255.939,
+        "updated_at": "2026-05-12T08:37:20.013677"
+    }
+}

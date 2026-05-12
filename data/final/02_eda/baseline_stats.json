@@ -1,0 +1,20 @@
+{
+    "timestamp": "2026-05-07T16:25:12.695801",
+    "metadata": {
+        "sample_size": 19131,
+        "mode": "baseline_statistics",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\corpus_a_cleaned.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\corpus_b_cleaned.csv"
+        ]
+    },
+    "results": {
+        "mean_a": 138.05425748784694,
+        "mean_b": 155.85665253381788,
+        "diff_mean_b_minus_a": 17.80239504597094,
+        "post_count_a": 19131,
+        "post_count_b": 19812,
+        "median_a": 99.0,
+        "median_b": 110.0
+    }
+}

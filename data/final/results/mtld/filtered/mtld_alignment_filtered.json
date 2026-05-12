@@ -1,0 +1,17 @@
+{
+    "timestamp": "2026-05-12T08:46:37.717907",
+    "metadata": {
+        "sample_size": 8848,
+        "mode": "mtld_filtered",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\filtered\\corpus_a_filtered.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\filtered\\corpus_b_filtered.csv"
+        ]
+    },
+    "results": {
+        "mtld_a_standard": 122.83306345302468,
+        "mtld_b_standard": 150.57961220573202,
+        "mtld_b_filtered": 122.84081836423567,
+        "diff_mtld_filtered": 0.007754911210994919
+    }
+}
