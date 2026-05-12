@@ -1,10 +1,16 @@
 venv/
 __pycache__/
 *.pyc
-data/
 _archive/
 src/deprecated/
 *.csv
 r_machinelearning_posts.jsonl
 .env
 test_openai.py
+
+# data folder
+data/*
+!data/final
+data/final/*
+!data/final/results
+!data/final/02_eda
