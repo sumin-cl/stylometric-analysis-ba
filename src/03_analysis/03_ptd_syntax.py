@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
                         PARSED_FULL, PARSED_FILTERED, PARSED_SAMPLES, \
-                        RESULTS_PTD_FULL, RESULTS_PTD_FILTERED, RESULTS_PTD_SAMPLES
+                        RESULTS_PTD_FULL, RESULTS_PTD_FILTERED, RESULTS_PTD_SAMPLES, RESULTS_PTD_LLM
 from utils.nlp_utils import analyze_syntax_complexity, save_as_json
 import json
 
@@ -188,6 +188,68 @@ def run_syntax_analysis_filtered():
     return depths_a, depths_b
 
 
+def run_syntax_analysis_llm():
+    """
+    Vergleicht PTD: Reddit-Korpus B (filtered, post-2022) vs. Corpus C (LLM).
+    Liest depths aus PARSED_FILTERED. Subsampelt B auf n_c indexbasiert,
+    damit Mean ueber balanciertem Set rechnet.
+    """
+    print("--- SYNTACTIC COMPLEXITY (Parse Tree Depth) — LLM: B vs C ---")
+
+    path_b = PROCESSED_FILTERED / "corpus_b_filtered.csv"
+    path_c = PROCESSED_FILTERED / "corpus_c_filtered.csv"
+
+    df_b = pd.read_csv(path_b)
+    df_c = pd.read_csv(path_c)
+
+    depths_b_full = json.load(open(PARSED_FILTERED / "corpus_b_filtered_parsed_depths.json"))
+    depths_c_full = json.load(open(PARSED_FILTERED / "corpus_c_filtered_parsed_depths.json"))
+
+    assert len(depths_b_full) == len(df_b), \
+        f"Laenge-Mismatch B: depths={len(depths_b_full)} vs df={len(df_b)}"
+    assert len(depths_c_full) == len(df_c), \
+        f"Laenge-Mismatch C: depths={len(depths_c_full)} vs df={len(df_c)}"
+
+    min_len = min(len(df_b), len(df_c))
+    print(f"Subsample auf {min_len} Posts pro Korpus (Index-basiert)...")
+
+    df_b_sub = df_b.sample(n=min_len, random_state=42)
+    df_c_sub = df_c.sample(n=min_len, random_state=42)
+
+    depths_b = [depths_b_full[i] for i in df_b_sub.index]
+    depths_c = [depths_c_full[i] for i in df_c_sub.index]
+
+    mean_b = np.mean(depths_b)
+    mean_c = np.mean(depths_c)
+    diff = mean_c - mean_b
+
+    print("\n--- ERGEBNISSE ---")
+    print(f"Durchschnittliche Baumtiefe B (Reddit post-2022): {mean_b:.2f}")
+    print(f"Durchschnittliche Baumtiefe C (LLM):              {mean_c:.2f}")
+    print(f"Differenz (C - B): {diff:.2f}")
+
+    if mean_c < mean_b:
+        print(">> LLM-Output hat flachere Parse-Bäume als Reddit B.")
+    else:
+        print(">> LLM-Output hat tiefere Parse-Bäume als Reddit B.")
+
+    meta = {
+        "sample_size": min_len,
+        "mode": "parse_tree_depth",
+        "layer": "llm",
+        "comparison": "B_reddit_filtered vs C_llm",
+        "source_files": [str(path_b), str(path_c)]
+    }
+    res = {
+        "mean_ptd_b": float(mean_b),
+        "mean_ptd_c": float(mean_c),
+        "diff_ptd": float(diff)
+    }
+    save_as_json("syntax_parse_depth_llm.json", meta, res, output_dir=RESULTS_PTD_LLM)
+
+    return depths_b, depths_c
+
+
 # src/03_analysis/03_mannwhitney.py
 from scipy.stats import mannwhitneyu
 import numpy as np
@@ -219,6 +281,9 @@ def run_significance_test(depths_a, depths_b, sample_num=None, layer=None):
     if layer == "filtered":
         filename = "syntax_parse_depth_filtered.json"
         out_dir = RESULTS_PTD_FILTERED
+    elif layer == "llm":
+        filename = "syntax_parse_depth_llm.json"
+        out_dir = RESULTS_PTD_LLM
     elif sample_num is not None:
         filename = f"syntax_parse_depth_sample{sample_num}.json"
         out_dir = RESULTS_PTD_SAMPLES
@@ -226,10 +291,20 @@ def run_significance_test(depths_a, depths_b, sample_num=None, layer=None):
         filename = "syntax_parse_depth.json"
         out_dir = RESULTS_PTD_FULL
 
+    n1, n2 = len(depths_a), len(depths_b)
+    # Rangbiseriale Korrelation (Wendt 1972; pingouin-Konvention):
+    # r_rb = 1 - 2U / (n1 * n2), liegt in [-1, 1]
+    # Vorzeichen: r_rb > 0 bedeutet depths_b systematisch groesser,
+    #             r_rb < 0 bedeutet depths_a systematisch groesser.
+    # |r_rb|: Effektstaerke; konventionell 0.1 klein, 0.3 mittel, 0.5 gross.
+    r_rb = 1 - (2 * stat) / (n1 * n2)
+
     append_to_json(filename, {
         "mann_whitney_u": float(stat),
         "p_value": float(p_val),
-        "effect_size_r": abs(stat) / (len(depths_a) * len(depths_b))**0.5
+        "effect_size_r": float(r_rb),
+        "n1": n1,
+        "n2": n2
     }, output_dir=out_dir)
 
 if __name__ == "__main__":
@@ -241,6 +316,9 @@ if __name__ == "__main__":
     elif mode == "filtered":
         depths_a, depths_b = run_syntax_analysis_filtered()
         mwu_outcome = run_significance_test(depths_a, depths_b, layer="filtered")
+    elif mode == "llm":
+        depths_b, depths_c = run_syntax_analysis_llm()
+        mwu_outcome = run_significance_test(depths_b, depths_c, layer="llm")
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
         depths_a, depths_b, sample_num = run_syntax_analysis_downsampled(sample)

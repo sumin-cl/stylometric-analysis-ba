@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats import mannwhitneyu
 from utils.paths import FINAL, TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES, \
-                        RESULTS_FWR_FULL, RESULTS_FWR_FILTERED, RESULTS_FWR_SAMPLES
+                        RESULTS_FWR_FULL, RESULTS_FWR_FILTERED, RESULTS_FWR_SAMPLES, RESULTS_FWR_LLM
 from utils.nlp_utils import save_as_json
 
 def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tagged.csv"):
@@ -142,6 +142,58 @@ def run_fwr_analysis_tagged_filtered():
     save_as_json("fwr_results_tagged_filtered.json", meta, res, output_dir=RESULTS_FWR_FILTERED)
 
 
+def run_fwr_analysis_tagged_llm():
+    """
+    Vergleicht FWR (tagged): Reddit-Korpus B (filtered, post-2022) vs. Corpus C (LLM).
+    Liest aus TAGGED_FILTERED. Subsampelt B auf n_c, Mann-Whitney-U-Test.
+    """
+    print("--- Start FWR-Analyse LLM (tagged, B vs C) ---")
+
+    path_b = TAGGED_FILTERED / "corpus_b_filtered_tagged.csv"
+    path_c = TAGGED_FILTERED / "corpus_c_filtered_tagged.csv"
+
+    df_b = pd.read_csv(path_b)
+    df_c = pd.read_csv(path_c)
+
+    min_len = min(len(df_b), len(df_c))
+    print(f"Sampling auf {min_len} Posts...")
+    df_b = df_b.sample(n=min_len, random_state=42)
+    df_c = df_c.sample(n=min_len, random_state=42)
+
+    func_tags = {'PRON', 'DET', 'ADP', 'CCONJ', 'SCONJ', 'PART'}
+
+    def get_fwr(pos_string):
+        tags = str(pos_string).split()
+        if not tags: return 0
+        func_count = sum(1 for t in tags if t in func_tags)
+        return func_count / len(tags)
+
+    print("Berechne FWR aus POS-Tags (LLM-Vgl)...")
+    fwr_b = df_b['pos_tags'].apply(get_fwr).tolist()
+    fwr_c = df_c['pos_tags'].apply(get_fwr).tolist()
+
+    stat, p_val = mannwhitneyu(fwr_b, fwr_c, alternative='two-sided')
+
+    meta = {
+        "sample_size": min_len,
+        "mode": "fwr_tagged",
+        "layer": "llm",
+        "comparison": "B_reddit_filtered vs C_llm",
+        "source_files": [str(path_b), str(path_c)]
+    }
+
+    res = {
+        "mean_fwr_b": float(np.mean(fwr_b)),
+        "mean_fwr_c": float(np.mean(fwr_c)),
+        "p_value": float(p_val),
+        "u_stat": float(stat),
+        "significant": bool(p_val < 0.05)
+    }
+
+    print(f"Ergebnis: p={p_val:.10f}")
+    save_as_json("fwr_results_tagged_llm.json", meta, res, output_dir=RESULTS_FWR_LLM)
+
+
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
@@ -149,6 +201,8 @@ if __name__ == "__main__":
         run_fwr_analysis_tagged()
     elif mode == "filtered":
         run_fwr_analysis_tagged_filtered()
+    elif mode == "llm":
+        run_fwr_analysis_tagged_llm()
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
         run_fwr_analysis_tagged_downsampled(sample_num=sample)

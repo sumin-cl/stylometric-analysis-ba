@@ -3,7 +3,7 @@ import pandas as pd
 from utils.nlp_utils import nlp, save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
                         TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES, \
-                        RESULTS_SHANNON_FULL, RESULTS_SHANNON_FILTERED, RESULTS_SHANNON_SAMPLES
+                        RESULTS_SHANNON_FULL, RESULTS_SHANNON_FILTERED, RESULTS_SHANNON_SAMPLES, RESULTS_SHANNON_LLM
 from tqdm import tqdm
 
 
@@ -262,6 +262,79 @@ def analyze_entropy_filtered(mode="WORD"):
     save_as_json(f"entropy_per_post_{mode.lower()}_filtered.json", meta, res_posts, output_dir=RESULTS_SHANNON_FILTERED)
 
 
+def analyze_entropy_llm(mode="WORD"):
+    """
+    Vergleicht Shannon-Entropie: Reddit-Korpus B (filtered, post-2022) vs. Corpus C (LLM).
+    Liest bevorzugt aus TAGGED_FILTERED (pre-tagged, schneller, konsistent),
+    Fallback auf PROCESSED_FILTERED + spaCy live. Subsampelt B auf n_c.
+    Berechnet Per-Post-Werte fuer spaetere Boxplots / Mann-Whitney.
+    mode: "WORD" oder "POS".
+    """
+    print(f"\n=== STARTE ENTROPIE-ANALYSE: {mode} (LLM: B vs C) ===")
+
+    path_b, path_c, tag_source = _resolve_paths(
+        PROCESSED_FILTERED / "corpus_b_filtered.csv",
+        PROCESSED_FILTERED / "corpus_c_filtered.csv",
+        TAGGED_FILTERED / "corpus_b_filtered_tagged.csv",
+        TAGGED_FILTERED / "corpus_c_filtered_tagged.csv",
+    )
+
+    df_b, df_c, size = downsample_corpora(path_b, path_c)
+
+    if mode == "WORD":
+        list_b = get_flat_tokens(df_b['text'])
+        list_c = get_flat_tokens(df_c['text'])
+    elif mode == "POS":
+        list_b = _pos_list(df_b)
+        list_c = _pos_list(df_c)
+
+    entropy_b = calculate_shannon_entropy(list_b)
+    entropy_c = calculate_shannon_entropy(list_c)
+
+    print(f"Entropie B ({mode}): {entropy_b:.4f}")
+    print(f"Entropie C ({mode}): {entropy_c:.4f}")
+
+    print("Filtere C basierend auf B (einseitiges Alignment)...")
+    min_freq = 3 if mode == "WORD" else 1
+    list_c_filtered = filter_list_by_reference(list_c, list_b, min_freq=min_freq)
+
+    entropy_c_filt = calculate_shannon_entropy(list_c_filtered)
+    print(f"Entropie C (Filtered auf B): {entropy_c_filt:.4f}")
+
+    diff_raw = entropy_c - entropy_b
+    diff_filt = entropy_c_filt - entropy_b
+
+    print(f"Differenz (Raw):       {diff_raw:.4f}")
+    print(f"Differenz (Bereinigt): {diff_filt:.4f}")
+
+    meta = {
+        "sample_size": size,
+        "mode": mode,
+        "layer": "llm",
+        "comparison": "B_reddit_filtered vs C_llm",
+        "tagging_source": tag_source,
+        "source_files": [str(path_b), str(path_c)]
+    }
+    res_global = {
+        "entropy_b": float(entropy_b),
+        "entropy_c": float(entropy_c),
+        "diff_entropy_raw": float(diff_raw),
+        "diff_entropy_filtered": float(diff_filt)
+    }
+
+    save_as_json(f"entropy_{mode.lower()}_llm.json", meta, res_global, output_dir=RESULTS_SHANNON_LLM)
+
+    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
+    df_c["entropy_post"] = analyze_entropy_per_post(df_c, mode)
+
+    res_posts = {
+        "entropy_per_post_b": df_b["entropy_post"].tolist(),
+        "entropy_per_post_c": df_c["entropy_post"].tolist()
+    }
+
+    save_as_json(f"entropy_per_post_{mode.lower()}_llm.json", meta, res_posts, output_dir=RESULTS_SHANNON_LLM)
+
+
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
@@ -271,6 +344,9 @@ if __name__ == "__main__":
     elif mode == "filtered":
         analyze_entropy_filtered(mode="WORD")
         analyze_entropy_filtered(mode="POS")
+    elif mode == "llm":
+        analyze_entropy_llm(mode="WORD")
+        analyze_entropy_llm(mode="POS")
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
         analyze_entropy_downsampled(mode="WORD", sample_num=sample)

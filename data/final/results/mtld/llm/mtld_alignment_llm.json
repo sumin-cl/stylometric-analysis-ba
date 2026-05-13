@@ -1,0 +1,18 @@
+{
+    "timestamp": "2026-05-13T08:42:53.429847",
+    "metadata": {
+        "sample_size": 440,
+        "mode": "mtld_llm",
+        "comparison": "B_reddit_filtered vs C_llm",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\filtered\\corpus_b_filtered.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\01_processed\\filtered\\corpus_c_filtered.csv"
+        ]
+    },
+    "results": {
+        "mtld_b_standard": 149.754563982272,
+        "mtld_c_standard": 188.25948390127445,
+        "mtld_c_filtered_on_b": 103.86632139293238,
+        "diff_mtld_filtered": -45.888242589339626
+    }
+}

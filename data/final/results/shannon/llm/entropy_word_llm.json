@@ -1,0 +1,20 @@
+{
+    "timestamp": "2026-05-13T08:43:18.125464",
+    "metadata": {
+        "sample_size": 440,
+        "mode": "WORD",
+        "layer": "llm",
+        "comparison": "B_reddit_filtered vs C_llm",
+        "tagging_source": "pre_tagged",
+        "source_files": [
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\03_tagged\\filtered\\corpus_b_filtered_tagged.csv",
+            "C:\\Users\\smcho\\Documents\\Projects\\stylometric-analysis-ba\\data\\final\\03_tagged\\filtered\\corpus_c_filtered_tagged.csv"
+        ]
+    },
+    "results": {
+        "entropy_b": 10.654420339931566,
+        "entropy_c": 9.770536229571183,
+        "diff_entropy_raw": -0.8838841103603823,
+        "diff_entropy_filtered": -2.2187326353920707
+    }
+}

@@ -4,7 +4,7 @@ from collections import Counter
 from lexical_diversity import lex_div as ld
 from tqdm import tqdm
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
-                        RESULTS_MTLD_FULL, RESULTS_MTLD_FILTERED, RESULTS_MTLD_SAMPLES
+                        RESULTS_MTLD_FULL, RESULTS_MTLD_FILTERED, RESULTS_MTLD_SAMPLES, RESULTS_MTLD_LLM
 from utils.nlp_utils import save_as_json
 
 def chunk_tokens(tokens, chunk_size=500):
@@ -189,6 +189,67 @@ def mtld_analysis_filtered(chunk_size=500):
     save_as_json("mtld_chunks_filtered.json", meta, res_chunks, output_dir=RESULTS_MTLD_FILTERED)
 
 
+def mtld_analysis_llm(chunk_size=500):
+    """
+    Vergleicht MTLD: Reddit-Korpus B (filtered, post-2022) vs. Corpus C (LLM-generiert).
+    Subsampelt B auf n_c fuer Vergleichbarkeit (C ist deutlich kleiner).
+    Berechnet zusaetzlich vokabulargefilterten MTLD fuer C (B als Referenzvokabular).
+    Speichert globale Ergebnisse in mtld_alignment_llm.json und Chunks in mtld_chunks_llm.json.
+    """
+    print(f"\n=== STARTE MTLD-ANALYSE (LLM: B vs C) ===")
+
+    path_b = PROCESSED_FILTERED / "corpus_b_filtered.csv"
+    path_c = PROCESSED_FILTERED / "corpus_c_filtered.csv"
+
+    df_b = pd.read_csv(path_b)
+    df_c = pd.read_csv(path_c)
+
+    size = min(len(df_b), len(df_c))
+    df_b = df_b.sample(n=size, random_state=42)
+    df_c = df_c.sample(n=size, random_state=42)
+
+    tokens_b = " ".join(df_b['text'].astype(str)).lower().split()
+    tokens_c = " ".join(df_c['text'].astype(str)).lower().split()
+
+    mtld_b = ld.mtld(tokens_b)
+    mtld_c = ld.mtld(tokens_c)
+
+    # B als Referenzvokabular fuer C
+    vocab_b = {w for w, c in Counter(tokens_b).items() if c >= 3}
+    tokens_c_filtered = [t for t in tokens_c if t in vocab_b]
+    mtld_c_filt = ld.mtld(tokens_c_filtered)
+
+    print(f"Ergebnisse (LLM, N={size}):")
+    print(f"MTLD B (Reddit post-2022): {mtld_b:.2f}")
+    print(f"MTLD C (LLM Raw):          {mtld_c:.2f}")
+    print(f"MTLD C (Filt auf B-Vocab): {mtld_c_filt:.2f} (Differenz zu B: {mtld_c_filt - mtld_b:.2f})")
+
+    meta = {
+        "sample_size": size,
+        "mode": "mtld_llm",
+        "comparison": "B_reddit_filtered vs C_llm",
+        "source_files": [str(path_b), str(path_c)]
+    }
+    res = {
+        "mtld_b_standard": float(mtld_b),
+        "mtld_c_standard": float(mtld_c),
+        "mtld_c_filtered_on_b": float(mtld_c_filt),
+        "diff_mtld_filtered": float(mtld_c_filt - mtld_b)
+    }
+    save_as_json("mtld_alignment_llm.json", meta, res, output_dir=RESULTS_MTLD_LLM)
+
+    mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B (LLM-Vgl)")]
+    mtld_chunks_c = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_c, chunk_size), desc="MTLD Chunks C")]
+    mtld_chunks_c_filtered = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_c_filtered, chunk_size), desc="MTLD Chunks C (Filt+Vocab)")]
+
+    res_chunks = {
+        "mtld_chunks_b": mtld_chunks_b,
+        "mtld_chunks_c": mtld_chunks_c,
+        "mtld_chunks_c_filtered": mtld_chunks_c_filtered
+    }
+    save_as_json("mtld_chunks_llm.json", meta, res_chunks, output_dir=RESULTS_MTLD_LLM)
+
+
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
@@ -196,6 +257,8 @@ if __name__ == "__main__":
         mtld_analysis()
     elif mode == "filtered":
         mtld_analysis_filtered()
+    elif mode == "llm":
+        mtld_analysis_llm()
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
         mtld_analysis_downsampled(sample_num=sample)
