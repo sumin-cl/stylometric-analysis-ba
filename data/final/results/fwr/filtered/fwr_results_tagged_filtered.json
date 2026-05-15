@@ -1,5 +1,5 @@
 {
-    "timestamp": "2026-05-12T08:38:51.073728",
+    "timestamp": "2026-05-15T17:44:36.260811",
     "metadata": {
         "sample_size": 8848,
         "mode": "fwr_tagged",
@@ -12,8 +12,10 @@
     "results": {
         "mean_fwr_a": 0.3241715474731568,
         "mean_fwr_b": 0.31488892982408306,
+        "mann_whitney_u": 42835165.0,
         "p_value": 1.700305121120869e-27,
-        "u_stat": 42835165.0,
-        "significant": true
+        "effect_size_r": -0.09430960685427836,
+        "n1": 8848,
+        "n2": 8848
     }
 }

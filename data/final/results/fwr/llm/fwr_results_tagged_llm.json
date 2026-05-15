@@ -1,7 +1,7 @@
 {
-    "timestamp": "2026-05-13T08:45:58.538202",
+    "timestamp": "2026-05-15T17:46:40.327272",
     "metadata": {
-        "sample_size": 440,
+        "sample_size": 1196,
         "mode": "fwr_tagged",
         "layer": "llm",
         "comparison": "B_reddit_filtered vs C_llm",
@@ -11,10 +11,12 @@
         ]
     },
     "results": {
-        "mean_fwr_b": 0.3136175561060688,
-        "mean_fwr_c": 0.3688859901652009,
-        "p_value": 1.6259725045537312e-51,
-        "u_stat": 39872.5,
-        "significant": true
+        "mean_fwr_b": 0.3175503303490975,
+        "mean_fwr_c": 0.3589733809964972,
+        "mann_whitney_u": 388695.5,
+        "p_value": 2.862484432418764e-83,
+        "effect_size_r": 0.45652803100636463,
+        "n1": 1196,
+        "n2": 1196
     }
 }

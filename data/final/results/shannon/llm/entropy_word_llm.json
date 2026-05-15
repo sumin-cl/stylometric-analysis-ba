@@ -1,7 +1,7 @@
 {
-    "timestamp": "2026-05-13T08:43:18.125464",
+    "timestamp": "2026-05-15T17:46:07.057641",
     "metadata": {
-        "sample_size": 440,
+        "sample_size": 1196,
         "mode": "WORD",
         "layer": "llm",
         "comparison": "B_reddit_filtered vs C_llm",
@@ -12,9 +12,14 @@
         ]
     },
     "results": {
-        "entropy_b": 10.654420339931566,
-        "entropy_c": 9.770536229571183,
-        "diff_entropy_raw": -0.8838841103603823,
-        "diff_entropy_filtered": -2.2187326353920707
+        "entropy_b": 10.799137615868792,
+        "entropy_c": 10.04035480560378,
+        "diff_entropy_raw": -0.7587828102650125,
+        "diff_entropy_filtered": -1.719835184013636,
+        "mann_whitney_u": 472182.5,
+        "p_value": 6.042215048200741e-47,
+        "effect_size_r": 0.3397969541727721,
+        "n1": 1196,
+        "n2": 1196
     }
 }
