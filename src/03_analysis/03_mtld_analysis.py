@@ -5,7 +5,7 @@ from lexical_diversity import lex_div as ld
 from tqdm import tqdm
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
                         RESULTS_MTLD_FULL, RESULTS_MTLD_FILTERED, RESULTS_MTLD_SAMPLES, RESULTS_MTLD_LLM
-from utils.nlp_utils import save_as_json
+from utils.nlp_utils import save_as_json, compute_mwu, print_mwu_summary
 
 def chunk_tokens(tokens, chunk_size=500):
     """Teilt eine Tokenliste in gleich große Chunks auf."""
@@ -63,10 +63,14 @@ def mtld_analysis(chunk_size=500):
     mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B")]
     mtld_chunks_b_filtered = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b_filtered, chunk_size), desc="MTLD Chunks B (Filtered)")]
 
+    mwu = compute_mwu(mtld_chunks_a, mtld_chunks_b)
+    print_mwu_summary(mwu, label="MTLD Chunks A vs B (full)")
+
     res_chunks = {
         "mtld_chunks_a": mtld_chunks_a,
         "mtld_chunks_b": mtld_chunks_b,
-        "mtld_chunks_b_filtered": mtld_chunks_b_filtered
+        "mtld_chunks_b_filtered": mtld_chunks_b_filtered,
+        **mwu,
     }
     save_as_json("mtld_chunks_results.json", meta, res_chunks, output_dir=RESULTS_MTLD_FULL)
 
@@ -120,11 +124,15 @@ def mtld_analysis_downsampled(sample_num=1, chunk_size=500):
     mtld_chunks_a = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_a, chunk_size), desc="MTLD Chunks A")]
     mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B")]
     mtld_chunks_b_filtered = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b_filtered, chunk_size), desc="MTLD Chunks B (Filt)")]
- 
+
+    mwu = compute_mwu(mtld_chunks_a, mtld_chunks_b)
+    print_mwu_summary(mwu, label=f"MTLD Chunks A vs B (sample {sample_num})")
+
     res_chunks = {
         "mtld_chunks_a": mtld_chunks_a,
         "mtld_chunks_b": mtld_chunks_b,
-        "mtld_chunks_b_filtered": mtld_chunks_b_filtered
+        "mtld_chunks_b_filtered": mtld_chunks_b_filtered,
+        **mwu,
     }
     save_as_json(f"mtld_chunks_sample{sample_num}.json", meta, res_chunks, output_dir=RESULTS_MTLD_SAMPLES)
 
@@ -181,10 +189,14 @@ def mtld_analysis_filtered(chunk_size=500):
     mtld_chunks_b = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b, chunk_size), desc="MTLD Chunks B (Filt)")]
     mtld_chunks_b_filtered = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_b_filtered, chunk_size), desc="MTLD Chunks B (Filt+Vocab)")]
 
+    mwu = compute_mwu(mtld_chunks_a, mtld_chunks_b)
+    print_mwu_summary(mwu, label="MTLD Chunks A vs B (filtered)")
+
     res_chunks = {
         "mtld_chunks_a": mtld_chunks_a,
         "mtld_chunks_b": mtld_chunks_b,
-        "mtld_chunks_b_filtered": mtld_chunks_b_filtered
+        "mtld_chunks_b_filtered": mtld_chunks_b_filtered,
+        **mwu,
     }
     save_as_json("mtld_chunks_filtered.json", meta, res_chunks, output_dir=RESULTS_MTLD_FILTERED)
 
@@ -242,10 +254,14 @@ def mtld_analysis_llm(chunk_size=500):
     mtld_chunks_c = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_c, chunk_size), desc="MTLD Chunks C")]
     mtld_chunks_c_filtered = [ld.mtld(chunk) for chunk in tqdm(chunk_tokens(tokens_c_filtered, chunk_size), desc="MTLD Chunks C (Filt+Vocab)")]
 
+    mwu = compute_mwu(mtld_chunks_b, mtld_chunks_c)
+    print_mwu_summary(mwu, label="MTLD Chunks B vs C (LLM)")
+
     res_chunks = {
         "mtld_chunks_b": mtld_chunks_b,
         "mtld_chunks_c": mtld_chunks_c,
-        "mtld_chunks_c_filtered": mtld_chunks_c_filtered
+        "mtld_chunks_c_filtered": mtld_chunks_c_filtered,
+        **mwu,
     }
     save_as_json("mtld_chunks_llm.json", meta, res_chunks, output_dir=RESULTS_MTLD_LLM)
 

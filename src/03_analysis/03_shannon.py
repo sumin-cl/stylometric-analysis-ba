@@ -1,6 +1,6 @@
 # src/03_analysis/03_shannon.py
 import pandas as pd
-from utils.nlp_utils import nlp, save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference
+from utils.nlp_utils import nlp, save_as_json, get_flat_tokens, get_pos_tags, downsample_corpora, calculate_shannon_entropy, filter_list_by_reference, compute_mwu, print_mwu_summary
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
                         TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES, \
                         RESULTS_SHANNON_FULL, RESULTS_SHANNON_FILTERED, RESULTS_SHANNON_SAMPLES, RESULTS_SHANNON_LLM
@@ -100,17 +100,21 @@ def analyze_entropy(mode="WORD"):
         "tagging_source": tag_source,
         "source_files": [str(path_a), str(path_b)]
     }
+    df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
+    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
+
+    mwu = compute_mwu(df_a["entropy_post"].tolist(), df_b["entropy_post"].tolist())
+    print_mwu_summary(mwu, label=f"Shannon {mode} A vs B (full)")
+
     res_global = {
         "entropy_a": float(entropy_a),
         "entropy_b": float(entropy_b),
         "diff_entropy_raw": float(diff_raw),
-        "diff_entropy_filtered": float(diff_filt)
+        "diff_entropy_filtered": float(diff_filt),
+        **mwu,
     }
 
     save_as_json(f"entropy_{mode.lower()}.json", meta, res_global, output_dir=RESULTS_SHANNON_FULL)
-
-    df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
-    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
 
     res_posts = {
         "entropy_per_post_a": df_a["entropy_post"].tolist(),
@@ -170,17 +174,21 @@ def analyze_entropy_downsampled(mode="WORD", sample_num=1):
         "tagging_source": tag_source,
         "source_files":[path_a.name, path_b.name]
     }
+    df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
+    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
+
+    mwu = compute_mwu(df_a["entropy_post"].tolist(), df_b["entropy_post"].tolist())
+    print_mwu_summary(mwu, label=f"Shannon {mode} A vs B (sample {sample_num})")
+
     res_global = {
         "entropy_a": float(entropy_a),
         "entropy_b": float(entropy_b),
         "diff_entropy_raw": float(diff_raw),
-        "diff_entropy_filtered": float(diff_filt)
+        "diff_entropy_filtered": float(diff_filt),
+        **mwu,
     }
 
     save_as_json(f"entropy_{mode.lower()}_sample{sample_num}.json", meta, res_global, output_dir=RESULTS_SHANNON_SAMPLES)
-
-    df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
-    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
 
     res_posts = {
         "entropy_per_post_a": df_a["entropy_post"].tolist(),
@@ -242,17 +250,21 @@ def analyze_entropy_filtered(mode="WORD"):
         "tagging_source": tag_source,
         "source_files": [str(path_a), str(path_b)]
     }
+    df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
+    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
+
+    mwu = compute_mwu(df_a["entropy_post"].tolist(), df_b["entropy_post"].tolist())
+    print_mwu_summary(mwu, label=f"Shannon {mode} A vs B (filtered)")
+
     res_global = {
         "entropy_a": float(entropy_a),
         "entropy_b": float(entropy_b),
         "diff_entropy_raw": float(diff_raw),
-        "diff_entropy_filtered": float(diff_filt)
+        "diff_entropy_filtered": float(diff_filt),
+        **mwu,
     }
 
     save_as_json(f"entropy_{mode.lower()}_filtered.json", meta, res_global, output_dir=RESULTS_SHANNON_FILTERED)
-
-    df_a["entropy_post"] = analyze_entropy_per_post(df_a, mode)
-    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
 
     res_posts = {
         "entropy_per_post_a": df_a["entropy_post"].tolist(),
@@ -315,17 +327,21 @@ def analyze_entropy_llm(mode="WORD"):
         "tagging_source": tag_source,
         "source_files": [str(path_b), str(path_c)]
     }
+    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
+    df_c["entropy_post"] = analyze_entropy_per_post(df_c, mode)
+
+    mwu = compute_mwu(df_b["entropy_post"].tolist(), df_c["entropy_post"].tolist())
+    print_mwu_summary(mwu, label=f"Shannon {mode} B vs C (LLM)")
+
     res_global = {
         "entropy_b": float(entropy_b),
         "entropy_c": float(entropy_c),
         "diff_entropy_raw": float(diff_raw),
-        "diff_entropy_filtered": float(diff_filt)
+        "diff_entropy_filtered": float(diff_filt),
+        **mwu,
     }
 
     save_as_json(f"entropy_{mode.lower()}_llm.json", meta, res_global, output_dir=RESULTS_SHANNON_LLM)
-
-    df_b["entropy_post"] = analyze_entropy_per_post(df_b, mode)
-    df_c["entropy_post"] = analyze_entropy_per_post(df_c, mode)
 
     res_posts = {
         "entropy_per_post_b": df_b["entropy_post"].tolist(),

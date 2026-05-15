@@ -1,7 +1,7 @@
 # src/03_analysis/03_fwr_ratio.py
 import pandas as pd
 import numpy as np
-from utils.nlp_utils import calculate_fwr_per_doc, save_as_json
+from utils.nlp_utils import calculate_fwr_per_doc, save_as_json, compute_mwu, print_mwu_summary
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
                         RESULTS_FWR_FULL, RESULTS_FWR_FILTERED, RESULTS_FWR_SAMPLES, RESULTS_FWR_LLM
 
@@ -47,13 +47,16 @@ def run_fwr_analysis(input_a="corpus_a_cleaned.csv", input_b="corpus_b_cleaned.c
         "mode": "fwr",
         "source_files": [str(path_a), str(path_b)]
     }
+    mwu = compute_mwu(fwr_a, fwr_b)
+    print_mwu_summary(mwu, label="FWR untagged A vs B (full)")
+
     res = {
         "mean_fwr_a": float(mean_a),
         "mean_fwr_b": float(mean_b),
         "diff_fwr": float(diff),
-        # For MWU
         "std_fwr_a": float(np.std(fwr_a)),
-        "std_fwr_b": float(np.std(fwr_b))
+        "std_fwr_b": float(np.std(fwr_b)),
+        **mwu,
     }
     save_as_json("fwr_results.json", meta, res, output_dir=RESULTS_FWR_FULL)
 
@@ -95,13 +98,16 @@ def run_fwr_analysis_downsampled(sample_num=1):
         "mode": "fwr",
         "source_files": [str(path_a), str(path_b)]
     }
+    mwu = compute_mwu(fwr_a, fwr_b)
+    print_mwu_summary(mwu, label=f"FWR untagged A vs B (sample {sample_num})")
+
     res = {
         "mean_fwr_a": float(mean_a),
         "mean_fwr_b": float(mean_b),
         "diff_fwr": float(diff),
-        # For MWU
         "std_fwr_a": float(np.std(fwr_a)),
-        "std_fwr_b": float(np.std(fwr_b))
+        "std_fwr_b": float(np.std(fwr_b)),
+        **mwu,
     }
     save_as_json(f"fwr_results_sample{sample_num}.json", meta, res, output_dir=RESULTS_FWR_SAMPLES)
 
@@ -147,13 +153,16 @@ def run_fwr_analysis_filtered():
         "layer": "filtered",
         "source_files": [str(path_a), str(path_b)]
     }
+    mwu = compute_mwu(fwr_a, fwr_b)
+    print_mwu_summary(mwu, label="FWR untagged A vs B (filtered)")
+
     res = {
         "mean_fwr_a": float(mean_a),
         "mean_fwr_b": float(mean_b),
         "diff_fwr": float(diff),
-        # For MWU
         "std_fwr_a": float(np.std(fwr_a)),
-        "std_fwr_b": float(np.std(fwr_b))
+        "std_fwr_b": float(np.std(fwr_b)),
+        **mwu,
     }
     save_as_json("fwr_results_filtered.json", meta, res, output_dir=RESULTS_FWR_FILTERED)
 
@@ -195,12 +204,16 @@ def run_fwr_analysis_llm():
         "comparison": "B_reddit_filtered vs C_llm",
         "source_files": [str(path_b), str(path_c)]
     }
+    mwu = compute_mwu(fwr_b, fwr_c)
+    print_mwu_summary(mwu, label="FWR untagged B vs C (LLM)")
+
     res = {
         "mean_fwr_b": float(mean_b),
         "mean_fwr_c": float(mean_c),
         "diff_fwr": float(diff),
         "std_fwr_b": float(np.std(fwr_b)),
-        "std_fwr_c": float(np.std(fwr_c))
+        "std_fwr_c": float(np.std(fwr_c)),
+        **mwu,
     }
     save_as_json("fwr_results_llm.json", meta, res, output_dir=RESULTS_FWR_LLM)
 

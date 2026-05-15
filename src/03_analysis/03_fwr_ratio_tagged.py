@@ -1,10 +1,10 @@
 # src/03_analysis/03_fwr_ratio_tagged.py
 import pandas as pd
 import numpy as np
-from scipy.stats import mannwhitneyu
+from scipy.stats import mannwhitneyu  # kept for backward-compat; main path now uses compute_mwu
 from utils.paths import FINAL, TAGGED_FULL, TAGGED_FILTERED, TAGGED_SAMPLES, \
                         RESULTS_FWR_FULL, RESULTS_FWR_FILTERED, RESULTS_FWR_SAMPLES, RESULTS_FWR_LLM
-from utils.nlp_utils import save_as_json
+from utils.nlp_utils import save_as_json, compute_mwu, print_mwu_summary
 
 def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tagged.csv"):
     """
@@ -30,7 +30,8 @@ def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tag
     fwr_a = df_a['pos_tags'].apply(get_fwr).tolist()
     fwr_b = df_b['pos_tags'].apply(get_fwr).tolist()
 
-    stat, p_val = mannwhitneyu(fwr_a, fwr_b, alternative='two-sided')
+    mwu = compute_mwu(fwr_a, fwr_b)
+    print_mwu_summary(mwu, label="FWR tagged A vs B (full)")
 
     meta = {
         "mode": "fwr_tagged",
@@ -40,12 +41,9 @@ def run_fwr_analysis_tagged(input_a="corpus_a_tagged.csv", input_b="corpus_b_tag
     res = {
         "mean_fwr_a": float(np.mean(fwr_a)),
         "mean_fwr_b": float(np.mean(fwr_b)),
-        "p_value": float(p_val),
-        "u_stat": float(stat),
-        "significant": bool(p_val < 0.05)
+        **mwu,
     }
-    
-    print(f"Ergebnis: p={p_val:.10f}")
+
     save_as_json("fwr_results_tagged.json", meta, res, output_dir=RESULTS_FWR_FULL)
 
 def run_fwr_analysis_tagged_downsampled(sample_num=1):
@@ -72,7 +70,8 @@ def run_fwr_analysis_tagged_downsampled(sample_num=1):
     fwr_a = df_a['pos_tags'].apply(get_fwr).tolist()
     fwr_b = df_b['pos_tags'].apply(get_fwr).tolist()
 
-    stat, p_val = mannwhitneyu(fwr_a, fwr_b, alternative='two-sided')
+    mwu = compute_mwu(fwr_a, fwr_b)
+    print_mwu_summary(mwu, label=f"FWR tagged A vs B (sample {sample_num})")
 
     meta = {
         "mode": "fwr_tagged",
@@ -83,12 +82,9 @@ def run_fwr_analysis_tagged_downsampled(sample_num=1):
     res = {
         "mean_fwr_a": float(np.mean(fwr_a)),
         "mean_fwr_b": float(np.mean(fwr_b)),
-        "p_value": float(p_val),
-        "u_stat": float(stat),
-        "significant": bool(p_val < 0.05)
+        **mwu,
     }
-    
-    print(f"Ergebnis: p={p_val:.10f}")
+
     save_as_json(f"fwr_results_tagged_sample{sample_num}.json", meta, res, output_dir=RESULTS_FWR_SAMPLES)
 
 
@@ -121,7 +117,8 @@ def run_fwr_analysis_tagged_filtered():
     fwr_a = df_a['pos_tags'].apply(get_fwr).tolist()
     fwr_b = df_b['pos_tags'].apply(get_fwr).tolist()
 
-    stat, p_val = mannwhitneyu(fwr_a, fwr_b, alternative='two-sided')
+    mwu = compute_mwu(fwr_a, fwr_b)
+    print_mwu_summary(mwu, label="FWR tagged A vs B (filtered)")
 
     meta = {
         "sample_size": min_len,
@@ -133,12 +130,9 @@ def run_fwr_analysis_tagged_filtered():
     res = {
         "mean_fwr_a": float(np.mean(fwr_a)),
         "mean_fwr_b": float(np.mean(fwr_b)),
-        "p_value": float(p_val),
-        "u_stat": float(stat),
-        "significant": bool(p_val < 0.05)
+        **mwu,
     }
 
-    print(f"Ergebnis: p={p_val:.10f}")
     save_as_json("fwr_results_tagged_filtered.json", meta, res, output_dir=RESULTS_FWR_FILTERED)
 
 
@@ -172,7 +166,8 @@ def run_fwr_analysis_tagged_llm():
     fwr_b = df_b['pos_tags'].apply(get_fwr).tolist()
     fwr_c = df_c['pos_tags'].apply(get_fwr).tolist()
 
-    stat, p_val = mannwhitneyu(fwr_b, fwr_c, alternative='two-sided')
+    mwu = compute_mwu(fwr_b, fwr_c)
+    print_mwu_summary(mwu, label="FWR tagged B vs C (LLM)")
 
     meta = {
         "sample_size": min_len,
@@ -185,12 +180,9 @@ def run_fwr_analysis_tagged_llm():
     res = {
         "mean_fwr_b": float(np.mean(fwr_b)),
         "mean_fwr_c": float(np.mean(fwr_c)),
-        "p_value": float(p_val),
-        "u_stat": float(stat),
-        "significant": bool(p_val < 0.05)
+        **mwu,
     }
 
-    print(f"Ergebnis: p={p_val:.10f}")
     save_as_json("fwr_results_tagged_llm.json", meta, res, output_dir=RESULTS_FWR_LLM)
 
 

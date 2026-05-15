@@ -216,3 +216,54 @@ def append_to_json(filename, new_results, output_dir=None):
         json.dump(data, f, indent=4)
 
     print(f"[APPEND] Mann-Whitney-U wurde hinzugefügt zu: {target_path}")
+
+
+# ---------------------------------------------------------
+# Statistik-Helper: Mann-Whitney-U + rangbiseriale Effektgroesse
+# ---------------------------------------------------------
+
+from scipy.stats import mannwhitneyu
+
+
+def compute_mwu(values_a, values_b):
+    """
+    Zweiseitiger Mann-Whitney-U-Test ueber zwei numerische Verteilungen.
+    Effektgroesse: rangbiseriale Korrelation r_rb (Wendt 1972; pingouin-Konvention):
+        r_rb = 1 - 2U / (n1 * n2),  Range [-1, 1]
+    Vorzeichen: r_rb < 0 -> values_a tendenziell groesser, r_rb > 0 -> values_b groesser.
+    Stufen |r_rb|: 0.1 klein, 0.3 mittel, 0.5 gross.
+    Liefert dict; macht keinen Print, kein Save.
+    """
+    stat, p_val = mannwhitneyu(values_a, values_b, alternative='two-sided')
+    n1, n2 = len(values_a), len(values_b)
+    r_rb = 1 - (2 * stat) / (n1 * n2)
+    return {
+        "mann_whitney_u": float(stat),
+        "p_value":        float(p_val),
+        "effect_size_r":  float(r_rb),
+        "n1":             n1,
+        "n2":             n2,
+    }
+
+
+def print_mwu_summary(result, label=""):
+    """CLI-Feedback fuer ein compute_mwu()-Result."""
+    tag = f" ({label})" if label else ""
+    p, r = result["p_value"], result["effect_size_r"]
+    print(f"\n--- MWU{tag} ---")
+    print(f"U = {result['mann_whitney_u']:.2f},  p = {p:.6e},  r_rb = {r:+.4f}  (n1={result['n1']}, n2={result['n2']})")
+
+    if p < 0.001:
+        sig = ">>> Hoechste Signifikanz (p < 0.001)"
+    elif p < 0.05:
+        sig = ">>> Signifikant (p < 0.05)"
+    else:
+        sig = ">>> Nicht signifikant (p >= 0.05)"
+
+    abs_r = abs(r)
+    if   abs_r < 0.1: eff = "sehr kleiner Effekt"
+    elif abs_r < 0.3: eff = "kleiner Effekt"
+    elif abs_r < 0.5: eff = "mittlerer Effekt"
+    else:             eff = "grosser Effekt"
+
+    print(f"{sig}  /  |r_rb| = {abs_r:.4f} ({eff})")

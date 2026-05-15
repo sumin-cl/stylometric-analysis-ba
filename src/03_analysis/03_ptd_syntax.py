@@ -4,7 +4,7 @@ import numpy as np
 from utils.paths import FINAL, PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, \
                         PARSED_FULL, PARSED_FILTERED, PARSED_SAMPLES, \
                         RESULTS_PTD_FULL, RESULTS_PTD_FILTERED, RESULTS_PTD_SAMPLES, RESULTS_PTD_LLM
-from utils.nlp_utils import analyze_syntax_complexity, save_as_json
+from utils.nlp_utils import analyze_syntax_complexity, save_as_json, compute_mwu, print_mwu_summary
 import json
 
 def run_syntax_analysis():
@@ -57,6 +57,9 @@ def run_syntax_analysis():
     else:
         print(">> Hypothese abgelehnt: Sätze werden tiefer verschachtelt.")
 
+    mwu = compute_mwu(depths_a, depths_b)
+    print_mwu_summary(mwu, label="PTD A vs B (full)")
+
     meta = {
         "sample_size": min_len,
         "mode": "parse_tree_depth",
@@ -65,7 +68,8 @@ def run_syntax_analysis():
     res = {
         "mean_ptd_a": float(mean_a),
         "mean_ptd_b": float(mean_b),
-        "diff_ptd": float(diff)
+        "diff_ptd": float(diff),
+        **mwu,
     }
     save_as_json("syntax_parse_depth.json", meta, res, output_dir=RESULTS_PTD_FULL)
 
@@ -110,6 +114,9 @@ def run_syntax_analysis_downsampled(sample_num=1):
     else:
         print(">> Hypothese abgelehnt: Sätze werden tiefer verschachtelt.")
 
+    mwu = compute_mwu(depths_a, depths_b)
+    print_mwu_summary(mwu, label=f"PTD A vs B (sample {sample_num})")
+
     meta = {
         "sample_size": size,
         "mode": "parse_tree_depth",
@@ -118,7 +125,8 @@ def run_syntax_analysis_downsampled(sample_num=1):
     res = {
         "mean_ptd_a": mean_a,
         "mean_ptd_b": mean_b,
-        "diff_ptd": diff
+        "diff_ptd": diff,
+        **mwu,
     }
     save_as_json(f"syntax_parse_depth_sample{sample_num}.json", meta, res, output_dir=RESULTS_PTD_SAMPLES)
 
@@ -172,6 +180,9 @@ def run_syntax_analysis_filtered():
     else:
         print(">> Hypothese abgelehnt: Sätze werden tiefer verschachtelt.")
 
+    mwu = compute_mwu(depths_a, depths_b)
+    print_mwu_summary(mwu, label="PTD A vs B (filtered)")
+
     meta = {
         "sample_size": min_len,
         "mode": "parse_tree_depth",
@@ -181,7 +192,8 @@ def run_syntax_analysis_filtered():
     res = {
         "mean_ptd_a": float(mean_a),
         "mean_ptd_b": float(mean_b),
-        "diff_ptd": float(diff)
+        "diff_ptd": float(diff),
+        **mwu,
     }
     save_as_json("syntax_parse_depth_filtered.json", meta, res, output_dir=RESULTS_PTD_FILTERED)
 
@@ -233,6 +245,9 @@ def run_syntax_analysis_llm():
     else:
         print(">> LLM-Output hat tiefere Parse-Bäume als Reddit B.")
 
+    mwu = compute_mwu(depths_b, depths_c)
+    print_mwu_summary(mwu, label="PTD B vs C (LLM)")
+
     meta = {
         "sample_size": min_len,
         "mode": "parse_tree_depth",
@@ -243,83 +258,23 @@ def run_syntax_analysis_llm():
     res = {
         "mean_ptd_b": float(mean_b),
         "mean_ptd_c": float(mean_c),
-        "diff_ptd": float(diff)
+        "diff_ptd": float(diff),
+        **mwu,
     }
     save_as_json("syntax_parse_depth_llm.json", meta, res, output_dir=RESULTS_PTD_LLM)
 
     return depths_b, depths_c
 
 
-# src/03_analysis/03_mannwhitney.py
-from scipy.stats import mannwhitneyu
-import numpy as np
-from utils.nlp_utils import append_to_json
-
-def run_significance_test(depths_a, depths_b, sample_num=None, layer=None):
-    """
-    Führt einen zweiseitigen Mann-Whitney-U-Test auf den Baumtiefe-Verteilungen durch.
-    Fügt U-Statistik, p-Wert und rangbiserialen Effektgröße r an die jeweilige
-    syntax_parse_depth*.json an.
-    """
-    print("\n--- STATISTISCHE SIGNIFIKANZ (Mann-Whitney-U) ---")
-    
-    stat, p_val = mannwhitneyu(depths_a, depths_b, alternative='two-sided')
-    
-    print(f"U-Statistik: {stat:.2f}")
-    print(f"p-Wert: {p_val:.10f}")
-
-    if p_val < 0.05:
-        print(">>> Ergebnis ist signifikant (p < 0.05). Der Unterschied ist kein Zufall.")
-        if p_val < 0.001:
-            print(">>> Höchste Signifikanzstufe erreicht (p < 0.001).")
-    else:
-        print(">>> Ergebnis ist nicht signifikant. Der Unterschied könnte Zufall sein.")
-
-    mean_diff = np.mean(depths_a) - np.mean(depths_b)
-    print(f"Absolute Differenz der Mittelwerte: {mean_diff:.4f}")
-
-    if layer == "filtered":
-        filename = "syntax_parse_depth_filtered.json"
-        out_dir = RESULTS_PTD_FILTERED
-    elif layer == "llm":
-        filename = "syntax_parse_depth_llm.json"
-        out_dir = RESULTS_PTD_LLM
-    elif sample_num is not None:
-        filename = f"syntax_parse_depth_sample{sample_num}.json"
-        out_dir = RESULTS_PTD_SAMPLES
-    else:
-        filename = "syntax_parse_depth.json"
-        out_dir = RESULTS_PTD_FULL
-
-    n1, n2 = len(depths_a), len(depths_b)
-    # Rangbiseriale Korrelation (Wendt 1972; pingouin-Konvention):
-    # r_rb = 1 - 2U / (n1 * n2), liegt in [-1, 1]
-    # Vorzeichen: r_rb > 0 bedeutet depths_b systematisch groesser,
-    #             r_rb < 0 bedeutet depths_a systematisch groesser.
-    # |r_rb|: Effektstaerke; konventionell 0.1 klein, 0.3 mittel, 0.5 gross.
-    r_rb = 1 - (2 * stat) / (n1 * n2)
-
-    append_to_json(filename, {
-        "mann_whitney_u": float(stat),
-        "p_value": float(p_val),
-        "effect_size_r": float(r_rb),
-        "n1": n1,
-        "n2": n2
-    }, output_dir=out_dir)
-
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "downsampled"
     if mode == "full":
-        depths_a, depths_b = run_syntax_analysis()
-        mwu_outcome = run_significance_test(depths_a, depths_b)
+        run_syntax_analysis()
     elif mode == "filtered":
-        depths_a, depths_b = run_syntax_analysis_filtered()
-        mwu_outcome = run_significance_test(depths_a, depths_b, layer="filtered")
+        run_syntax_analysis_filtered()
     elif mode == "llm":
-        depths_b, depths_c = run_syntax_analysis_llm()
-        mwu_outcome = run_significance_test(depths_b, depths_c, layer="llm")
+        run_syntax_analysis_llm()
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-        depths_a, depths_b, sample_num = run_syntax_analysis_downsampled(sample)
-        mwu_outcome = run_significance_test(depths_a, depths_b, sample_num)
+        run_syntax_analysis_downsampled(sample)

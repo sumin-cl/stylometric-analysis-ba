@@ -185,9 +185,10 @@ goto synthetic_menu
 :topic_menu
 cls
 echo  Topic Extraction --- Sample auswaehlen:
-echo  [1] Sample 1   [2] Sample 2   [3] Sample 3   [all] Alle
+echo  [F] Filtered (Reddit-Korpora gesamt)   [1] Sample 1   [2] Sample 2   [3] Sample 3   [all] Alle Samples
 echo.
 set /p sample="Sample: "
+if /i "%sample%"=="F"   python src\02_generation\02_topic_extraction.py filtered          & goto done_synthetic
 if "%sample%"=="1"      python src\02_generation\02_topic_extraction.py downsampled 1   & goto done_synthetic
 if "%sample%"=="2"      python src\02_generation\02_topic_extraction.py downsampled 2   & goto done_synthetic
 if "%sample%"=="3"      python src\02_generation\02_topic_extraction.py downsampled 3   & goto done_synthetic
@@ -276,12 +277,13 @@ echo  [L1] MTLD            (B-Samples vs Corpus C)
 echo  [L2] Shannon         (B-Samples vs Corpus C)
 echo  [L3] PTD             (B-Samples vs Corpus C)
 echo  [L4] FWR  (tagged)   (B-Samples vs Corpus C)
-echo  [L5] Signifikanz     (B vs C, Mann-Whitney)
+echo  [L5] FWR  (untagged) (B-Samples vs Corpus C)
 echo.
 echo  --- Globale Signifikanz / Visualisierung ---
-echo  [6]  Mann-Whitney  (Syntax)
 echo  [7]  Globale Signifikanztests
 echo  [8]  Visualisierungen
+echo.
+echo  Hinweis: MWU/Effektgroesse ist jetzt in jede Metrik (1-5, L1-L4) integriert.
 echo.
 echo  [B]  Zurueck
 echo.
@@ -296,8 +298,7 @@ if /i "%choice%"=="L1" python src\03_analysis\03_mtld_analysis.py    llm    & go
 if /i "%choice%"=="L2" python src\03_analysis\03_shannon.py          llm    & goto done_analysis
 if /i "%choice%"=="L3" python src\03_analysis\03_ptd_syntax.py       llm    & goto done_analysis
 if /i "%choice%"=="L4" python src\03_analysis\03_fwr_ratio_tagged.py llm    & goto done_analysis
-if /i "%choice%"=="L5" python src\03_analysis\03_mannwhitney.py      llm    & goto done_analysis
-if "%choice%"=="6"  python src\03_analysis\03_mannwhitney.py                & goto done_analysis
+if /i "%choice%"=="L5" python src\03_analysis\03_fwr_ratio.py        llm    & goto done_analysis
 if "%choice%"=="7"  python src\04_visualization\04_sign_all.py              & goto done_analysis
 if "%choice%"=="8"  python src\04_visualization\04_visualization.py         & goto done_analysis
 if /i "%choice%"=="B" goto menu
