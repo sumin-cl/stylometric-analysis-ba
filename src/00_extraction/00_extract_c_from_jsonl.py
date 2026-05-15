@@ -20,14 +20,20 @@ from utils.paths import GENERATED_CORPUS, EXTRACTED
 
 def extract_from_jsonl(jsonl_path=None):
     if jsonl_path is None:
-        files = sorted(GENERATED_CORPUS.glob("*_synthetic.jsonl"))
+        files = sorted(
+            GENERATED_CORPUS.glob("*_synthetic.jsonl"),
+            key=lambda p: p.stat().st_mtime,
+        )
         if not files:
             raise FileNotFoundError(
                 f"Keine *_synthetic.jsonl in {GENERATED_CORPUS} gefunden.\n"
                 "Bitte zuerst LLM-Korpus generieren (Option [4] im Synthetic-Menü)."
             )
         jsonl_path = files[-1]
-        print(f"Automatisch gewählt: {jsonl_path.name}")
+        print(f"Automatisch gewählt (neueste Datei): {jsonl_path.name}")
+        if len(files) > 1:
+            other_files = ", ".join(f.name for f in files[:-1])
+            print(f"  (uebersprungen: {other_files})")
 
     jsonl_path = Path(jsonl_path)
     print(f"Lese: {jsonl_path}")

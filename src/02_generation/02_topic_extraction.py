@@ -2,7 +2,7 @@ import pandas as pd
 import spacy
 import json
 
-from utils.paths import PROCESSED, GENERATED
+from utils.paths import PROCESSED_FULL, PROCESSED_FILTERED, PROCESSED_SAMPLES, GENERATED_TOPICS
 from pathlib import Path
 
 from tqdm import tqdm
@@ -23,8 +23,15 @@ def extract_topics(text, max_tokens=8):
 
     return nouns, adjs, tokens
 
-def process_file(input_name, output_name=None):    
-    input_path = PROCESSED / input_name
+def process_file(input_name, output_name=None):
+    # Quelle abhaengig vom Dateinamen.
+    if input_name.startswith("sample"):
+        source_dir = PROCESSED_SAMPLES
+    elif "_filtered" in input_name:
+        source_dir = PROCESSED_FILTERED
+    else:
+        source_dir = PROCESSED_FULL
+    input_path = source_dir / input_name
 
     source = input_name
     sample_id = None
@@ -57,9 +64,9 @@ def process_file(input_name, output_name=None):
         "tokens": tokens_list
     })
 
-    out_path = GENERATED / output_name
+    out_path = GENERATED_TOPICS / output_name
     df_out.to_csv(out_path, index=False)
-    print(f"Gespeichert: {out_path.name}")
+    print(f"Gespeichert: {out_path}")
 
 import re
 
@@ -84,6 +91,9 @@ def main():
     if mode == "full":
         process_file("corpus_a_cleaned.csv")
         process_file("corpus_b_cleaned.csv")
+    elif mode == "filtered":
+        process_file("corpus_a_filtered.csv")
+        process_file("corpus_b_filtered.csv")
     else:
         sample = int(sys.argv[2]) if len(sys.argv) > 2 else 1
         process_file(f"sample{sample}_pre_n500.csv")

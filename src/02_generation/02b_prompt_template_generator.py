@@ -3,25 +3,28 @@ import random
 from pathlib import Path
 import pandas as pd
 
-from utils.paths import GENERATED
+from utils.paths import GENERATED_TOPICS, GENERATED_PROMPTS
 
 # ---------------------------------------------------------
 # Seed Loader
 # ---------------------------------------------------------
 
 def load_seeds():
-    topic_files = sorted(GENERATED.glob("*_topics.csv"))
+    topic_files = sorted(GENERATED_TOPICS.glob("*_topics.csv"))
+    print(f"Lade Topic-Dateien aus {GENERATED_TOPICS}/  ({len(topic_files)} gefunden)")
     seeds = []
 
     for f in topic_files:
         df = pd.read_csv(f)
+        n_before = len(seeds)
         for row in df["tokens"]:
             try:
                 toks = json.loads(row)
                 if isinstance(toks, list):
                     seeds.append(toks)
-            except:
+            except json.JSONDecodeError:
                 pass
+        print(f"  {f.name}: +{len(seeds) - n_before} seeds")
 
     return seeds
 
@@ -86,8 +89,10 @@ def main():
         print("No seeds found.")
         return
 
-    out_dir = GENERATED / "prompts"
-    out_dir.mkdir(exist_ok=True)
+    print(f"Total seeds im Pool: {len(seeds_pool)}")
+
+    out_dir = GENERATED_PROMPTS
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     out_path = out_dir / f"prompts_style_{style}_{count}.jsonl"
 
