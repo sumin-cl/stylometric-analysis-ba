@@ -1,42 +1,416 @@
-# src/04_visualization/04_sign_all.py
-import pandas as pd
-from scipy.stats import mannwhitneyu
+"""
+Aggregator: Sammelt alle Signifikanz- und Effektgroessen-Statistiken in
+eine zentrale Uebersichtstabelle.
+
+Liest die existierenden MWU+r_rb-Werte aus den Pipeline-JSONs (Phase D)
+und ergaenzt sie um drei komplementaere Statistiken:
+  - Levene-Test (Varianzhomogenitaet)
+  - Kolmogorov-Smirnov (Verteilungs-Form)
+  - Cohen's d (parametrische Effektgroesse)
+
+Output:
+  data/final/results/significance/aggregate_report.csv
+  data/final/results/significance/aggregate_report.md
+
+Hinweis: FWR-untagged-Stats benoetigen per-doc-Werte, die nicht in den
+Pipeline-JSONs gespeichert sind; diese werden hier on-the-fly mit spaCy
+neu berechnet (~5-8 Minuten Laufzeit). Mit Flag --quick wird das
+uebersprungen (nur Cohen's d aus Mean/Std).
+
+Verwendung:
+    python src/04_visualization/04_sign_all.py
+    python src/04_visualization/04_sign_all.py --quick   # ohne spaCy-Lauf
+"""
+import json
+import sys
+from pathlib import Path
+
 import numpy as np
-from utils.paths import TAGGED, RESULTS
-from utils.nlp_utils import save_as_json
+import pandas as pd
+from scipy.stats import levene, ks_2samp
 
-def calculate_significance(name, values_a, values_b):
-    """
-    Führt einen zweiseitigen Mann-Whitney-U-Test auf zwei Wertelisten durch und gibt das Ergebnis aus.
-    Gibt ein Dict mit 'u_stat' und 'p_value' zurück.
-    """
-    stat, p_val = mannwhitneyu(values_a, values_b, alternative='two-sided')
-    print(f"{name}: p-value = {p_val:.10f} ({'SIGNIFIKANT' if p_val < 0.05 else 'NICHT signifikant'})")
-    return {"u_stat": float(stat), "p_value": float(p_val)}
+from utils.paths import (
+    PROCESSED_FILTERED, TAGGED_FILTERED, PARSED_FILTERED,
+    RESULTS_MTLD_FILTERED, RESULTS_MTLD_LLM,
+    RESULTS_SHANNON_FILTERED, RESULTS_SHANNON_LLM,
+    RESULTS_FWR_FILTERED, RESULTS_FWR_LLM,
+    RESULTS_PTD_FILTERED, RESULTS_PTD_LLM,
+    RESULTS_SIGNIF,
+)
 
-def run_all_stats():
-    """
-    Lädt beide getaggten Korpora und führt Signifikanztests für alle Metriken durch.
-    Speichert den vollständigen Signifikanzbericht in final_significance_report.json.
-    """
-    path_a = TAGGED / "corpus_a_tagged.csv"
-    path_b = TAGGED / "corpus_b_tagged.csv"
+# ---------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------
+def _load_json(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-    df_a = pd.read_csv(path_a)
-    df_b = pd.read_csv(path_b)
-    
-    len_a = df_a['text'].str.split().str.len()
-    len_b = df_b['text'].str.split().str.len()
-    
-    results = {}
-    results["text_length"] = calculate_significance("Text Length", len_a, len_b)
-    
-    meta = {
-        "mode": "all_metrics",
-        "source_files": [str(path_a), str(path_b)]
+
+def cohens_d(values_a, values_b):
+    """Cohen's d mit pooled std (Cohen 1988). Vorzeichen-Konvention:
+    d > 0 -> values_a groesser, d < 0 -> values_b groesser."""
+    n1, n2 = len(values_a), len(values_b)
+    m1, m2 = np.mean(values_a), np.mean(values_b)
+    s1, s2 = np.std(values_a, ddof=1), np.std(values_b, ddof=1)
+    pooled = np.sqrt(((n1-1)*s1**2 + (n2-1)*s2**2) / (n1+n2-2))
+    return float((m1 - m2) / pooled) if pooled > 0 else 0.0
+
+
+def cohens_d_from_summary(m1, s1, n1, m2, s2, n2):
+    """Cohen's d nur aus den Summary-Statistiken (Mean/Std/N), falls
+    Raw-Daten nicht verfuegbar."""
+    pooled = np.sqrt(((n1-1)*s1**2 + (n2-1)*s2**2) / (n1+n2-2))
+    return float((m1 - m2) / pooled) if pooled > 0 else 0.0
+
+
+def classify_rrb(r):
+    a = abs(r)
+    return ("negligible" if a < 0.1 else
+            "small"      if a < 0.3 else
+            "medium"     if a < 0.5 else
+            "large")
+
+
+def classify_cohen(d):
+    a = abs(d)
+    return ("negligible" if a < 0.2 else
+            "small"      if a < 0.5 else
+            "medium"     if a < 0.8 else
+            "large")
+
+
+# ---------------------------------------------------------
+# Raw-Daten-Loader
+# ---------------------------------------------------------
+def load_mtld_chunks(layer):
+    if layer == "filtered":
+        res = _load_json(RESULTS_MTLD_FILTERED / "mtld_chunks_filtered.json")["results"]
+        return res["mtld_chunks_a"], res["mtld_chunks_b"]
+    else:
+        res = _load_json(RESULTS_MTLD_LLM / "mtld_chunks_llm.json")["results"]
+        return res["mtld_chunks_b"], res["mtld_chunks_c"]
+
+
+def load_shannon_per_post(layer, mode):
+    """mode: 'word' oder 'pos'"""
+    if layer == "filtered":
+        res = _load_json(RESULTS_SHANNON_FILTERED / f"entropy_per_post_{mode}_filtered.json")["results"]
+        return res["entropy_per_post_a"], res["entropy_per_post_b"]
+    else:
+        res = _load_json(RESULTS_SHANNON_LLM / f"entropy_per_post_{mode}_llm.json")["results"]
+        return res["entropy_per_post_b"], res["entropy_per_post_c"]
+
+
+def load_ptd(layer):
+    a = _load_json(PARSED_FILTERED / "corpus_a_filtered_parsed_depths.json")
+    b = _load_json(PARSED_FILTERED / "corpus_b_filtered_parsed_depths.json")
+    c = _load_json(PARSED_FILTERED / "corpus_c_filtered_parsed_depths.json")
+    return (a, b) if layer == "filtered" else (b, c)
+
+
+def compute_fwr_tagged_per_doc(corpus_letter):
+    """Korpus-Letter: 'a', 'b', oder 'c'. FWR tagged = Funktions-Tokens / Gesamt-Tokens."""
+    func_tags = {"PRON", "DET", "ADP", "CCONJ", "SCONJ", "PART"}
+    df = pd.read_csv(TAGGED_FILTERED / f"corpus_{corpus_letter}_filtered_tagged.csv")
+
+    def fwr_of(pos_string):
+        tags = str(pos_string).split()
+        if not tags:
+            return 0.0
+        return sum(1 for t in tags if t in func_tags) / len(tags)
+
+    return df["pos_tags"].apply(fwr_of).tolist()
+
+
+def compute_fwr_untagged_per_doc(corpus_letter, nlp_model):
+    """FWR untagged = Funktions-Tokens / Inhalts-Tokens (analog calculate_fwr_per_doc)."""
+    from tqdm import tqdm
+    df = pd.read_csv(PROCESSED_FILTERED / f"corpus_{corpus_letter}_filtered.csv")
+
+    content_tags = {"NOUN", "VERB", "ADJ", "ADV", "PROPN"}
+    func_tags    = {"ADP", "AUX", "CONJ", "CCONJ", "SCONJ", "DET", "PART", "PRON"}
+
+    ratios = []
+    for doc in tqdm(nlp_model.pipe(df["text"].astype(str), batch_size=100),
+                    total=len(df), desc=f"FWR untagged ({corpus_letter})"):
+        n_func = sum(1 for t in doc if t.pos_ in func_tags)
+        n_cont = sum(1 for t in doc if t.pos_ in content_tags)
+        ratios.append(n_func / n_cont if n_cont > 0 else 0.0)
+    return ratios
+
+
+# ---------------------------------------------------------
+# Statistik-Berechnung
+# ---------------------------------------------------------
+def compute_complementary_stats(raw_a, raw_b):
+    """Levene, KS, Cohen's d aus zwei Roh-Listen."""
+    raw_a = np.asarray(raw_a, dtype=float)
+    raw_b = np.asarray(raw_b, dtype=float)
+    levene_w, p_lev = levene(raw_a, raw_b)
+    ks_d,     p_ks  = ks_2samp(raw_a, raw_b)
+    d = cohens_d(raw_a, raw_b)
+    return {
+        "levene_W":    float(levene_w),
+        "p_levene":    float(p_lev),
+        "ks_D":        float(ks_d),
+        "p_ks":        float(p_ks),
+        "cohens_d":    d,
+        "abs_cohens_d": abs(d),
+        "cohen_effect": classify_cohen(d),
     }
 
-    save_as_json("final_significance_report.json", meta, results)
 
+def build_record(metric, comparison, summary_json_path, mean_keys, raw_a, raw_b):
+    """Sammelt alles fuer eine (Metrik, Comparison)-Zeile.
+    
+    summary_json_path: liefert Mean-Werte + MWU+r_rb
+    mean_keys: tuple (key_for_corpus_1, key_for_corpus_2) in summary["results"]
+    raw_a, raw_b: per-doc/chunk-Werte fuer Levene/KS/Cohen's d (oder None)
+    """
+    j = _load_json(summary_json_path)["results"]
+
+    # Mean-Werte ggf. aus Listen aggregieren (z.B. MTLD chunks)
+    v1 = j[mean_keys[0]]
+    v2 = j[mean_keys[1]]
+    mean_1 = float(np.mean(v1)) if isinstance(v1, list) else float(v1)
+    mean_2 = float(np.mean(v2)) if isinstance(v2, list) else float(v2)
+
+    rec = {
+        "metric":     metric,
+        "comparison": comparison,
+        "mean_1":     mean_1,
+        "mean_2":     mean_2,
+        "diff":       mean_2 - mean_1,
+        "n1":         int(j["n1"]),
+        "n2":         int(j["n2"]),
+        # MWU + rangbiserial (aus JSON)
+        "U":          float(j["mann_whitney_u"]),
+        "p_mwu":      float(j["p_value"]),
+        "r_rb":       float(j["effect_size_r"]),
+        "abs_r_rb":   abs(float(j["effect_size_r"])),
+        "rrb_effect": classify_rrb(j["effect_size_r"]),
+    }
+
+    if raw_a is not None and raw_b is not None:
+        rec.update(compute_complementary_stats(raw_a, raw_b))
+    else:
+        # Fallback: nur Cohen's d aus Summary
+        std_keys = mean_keys[0].replace("mean_", "std_"), mean_keys[1].replace("mean_", "std_")
+        if std_keys[0] in j and std_keys[1] in j:
+            d = cohens_d_from_summary(
+                mean_1, float(j[std_keys[0]]), int(j["n1"]),
+                mean_2, float(j[std_keys[1]]), int(j["n2"])
+            )
+            rec.update({
+                "levene_W": np.nan, "p_levene": np.nan,
+                "ks_D": np.nan,     "p_ks": np.nan,
+                "cohens_d": d, "abs_cohens_d": abs(d),
+                "cohen_effect": classify_cohen(d),
+            })
+        else:
+            for k in ["levene_W", "p_levene", "ks_D", "p_ks",
+                      "cohens_d", "abs_cohens_d", "cohen_effect"]:
+                rec[k] = np.nan
+
+    return rec
+
+
+# ---------------------------------------------------------
+# Hauptlogik
+# ---------------------------------------------------------
+def aggregate(quick=False):
+    records = []
+
+    # ── MTLD chunks ──────────────────────────────────────
+    print("[1/6] MTLD chunks...")
+    a, b = load_mtld_chunks("filtered")
+    records.append(build_record(
+        "MTLD", "A vs B (filtered)",
+        RESULTS_MTLD_FILTERED / "mtld_chunks_filtered.json",
+        ("mtld_chunks_a", "mtld_chunks_b"),  # nicht direkt nutzbar — Workaround unten
+        a, b,
+    ))
+    # MTLD-Mean ist eigentlich ueber Chunks; nutze alignment-File fuer single-value:
+    alignment_f = _load_json(RESULTS_MTLD_FILTERED / "mtld_alignment_filtered.json")["results"]
+    records[-1]["mean_1"] = alignment_f.get("mtld_a_standard", np.mean(a))
+    records[-1]["mean_2"] = alignment_f.get("mtld_b_standard", np.mean(b))
+    records[-1]["diff"]   = records[-1]["mean_2"] - records[-1]["mean_1"]
+
+    b2, c = load_mtld_chunks("llm")
+    records.append(build_record(
+        "MTLD", "B vs C (LLM)",
+        RESULTS_MTLD_LLM / "mtld_chunks_llm.json",
+        ("mtld_chunks_b", "mtld_chunks_c"),
+        b2, c,
+    ))
+    alignment_l = _load_json(RESULTS_MTLD_LLM / "mtld_alignment_llm.json")["results"]
+    records[-1]["mean_1"] = alignment_l.get("mtld_b_standard", np.mean(b2))
+    records[-1]["mean_2"] = alignment_l.get("mtld_c_standard", np.mean(c))
+    records[-1]["diff"]   = records[-1]["mean_2"] - records[-1]["mean_1"]
+
+    # ── Shannon WORD ─────────────────────────────────────
+    print("[2/6] Shannon WORD...")
+    a, b = load_shannon_per_post("filtered", "word")
+    records.append(build_record(
+        "Shannon WORD", "A vs B (filtered)",
+        RESULTS_SHANNON_FILTERED / "entropy_word_filtered.json",
+        ("entropy_a", "entropy_b"),
+        a, b,
+    ))
+    b2, c = load_shannon_per_post("llm", "word")
+    records.append(build_record(
+        "Shannon WORD", "B vs C (LLM)",
+        RESULTS_SHANNON_LLM / "entropy_word_llm.json",
+        ("entropy_b", "entropy_c"),
+        b2, c,
+    ))
+
+    # ── Shannon POS ──────────────────────────────────────
+    print("[3/6] Shannon POS...")
+    a, b = load_shannon_per_post("filtered", "pos")
+    records.append(build_record(
+        "Shannon POS", "A vs B (filtered)",
+        RESULTS_SHANNON_FILTERED / "entropy_pos_filtered.json",
+        ("entropy_a", "entropy_b"),
+        a, b,
+    ))
+    b2, c = load_shannon_per_post("llm", "pos")
+    records.append(build_record(
+        "Shannon POS", "B vs C (LLM)",
+        RESULTS_SHANNON_LLM / "entropy_pos_llm.json",
+        ("entropy_b", "entropy_c"),
+        b2, c,
+    ))
+
+    # ── PTD ──────────────────────────────────────────────
+    print("[4/6] PTD...")
+    a, b = load_ptd("filtered")
+    records.append(build_record(
+        "PTD", "A vs B (filtered)",
+        RESULTS_PTD_FILTERED / "syntax_parse_depth_filtered.json",
+        ("mean_ptd_a", "mean_ptd_b"),
+        a, b,
+    ))
+    b2, c = load_ptd("llm")
+    records.append(build_record(
+        "PTD", "B vs C (LLM)",
+        RESULTS_PTD_LLM / "syntax_parse_depth_llm.json",
+        ("mean_ptd_b", "mean_ptd_c"),
+        b2, c,
+    ))
+
+    # ── FWR tagged (per-doc aus TAGGED CSV) ──────────────
+    print("[5/6] FWR tagged (aus TAGGED CSV)...")
+    fwr_t_a = compute_fwr_tagged_per_doc("a")
+    fwr_t_b = compute_fwr_tagged_per_doc("b")
+    fwr_t_c = compute_fwr_tagged_per_doc("c")
+    records.append(build_record(
+        "FWR tagged", "A vs B (filtered)",
+        RESULTS_FWR_FILTERED / "fwr_results_tagged_filtered.json",
+        ("mean_fwr_a", "mean_fwr_b"),
+        fwr_t_a, fwr_t_b,
+    ))
+    records.append(build_record(
+        "FWR tagged", "B vs C (LLM)",
+        RESULTS_FWR_LLM / "fwr_results_tagged_llm.json",
+        ("mean_fwr_b", "mean_fwr_c"),
+        fwr_t_b, fwr_t_c,
+    ))
+
+    # ── FWR untagged (spaCy live oder quick mode) ────────
+    print("[6/6] FWR untagged...")
+    if quick:
+        print("  [quick mode] -> Cohen's d aus Summary, Levene/KS = N/A")
+        records.append(build_record(
+            "FWR untagged", "A vs B (filtered)",
+            RESULTS_FWR_FILTERED / "fwr_results_filtered.json",
+            ("mean_fwr_a", "mean_fwr_b"),
+            None, None,
+        ))
+        records.append(build_record(
+            "FWR untagged", "B vs C (LLM)",
+            RESULTS_FWR_LLM / "fwr_results_llm.json",
+            ("mean_fwr_b", "mean_fwr_c"),
+            None, None,
+        ))
+    else:
+        import spacy
+        print("  Lade spaCy...")
+        nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
+        fwr_u_a = compute_fwr_untagged_per_doc("a", nlp)
+        fwr_u_b = compute_fwr_untagged_per_doc("b", nlp)
+        fwr_u_c = compute_fwr_untagged_per_doc("c", nlp)
+        records.append(build_record(
+            "FWR untagged", "A vs B (filtered)",
+            RESULTS_FWR_FILTERED / "fwr_results_filtered.json",
+            ("mean_fwr_a", "mean_fwr_b"),
+            fwr_u_a, fwr_u_b,
+        ))
+        records.append(build_record(
+            "FWR untagged", "B vs C (LLM)",
+            RESULTS_FWR_LLM / "fwr_results_llm.json",
+            ("mean_fwr_b", "mean_fwr_c"),
+            fwr_u_b, fwr_u_c,
+        ))
+
+    return records
+
+
+# ---------------------------------------------------------
+# Output
+# ---------------------------------------------------------
+def write_outputs(records):
+    df = pd.DataFrame(records)
+
+    # Spalten-Reihenfolge fuer Lesbarkeit
+    cols = [
+        "metric", "comparison", "n1", "n2",
+        "mean_1", "mean_2", "diff",
+        "U", "p_mwu", "r_rb", "abs_r_rb", "rrb_effect",
+        "levene_W", "p_levene",
+        "ks_D",     "p_ks",
+        "cohens_d", "abs_cohens_d", "cohen_effect",
+    ]
+    df = df[[c for c in cols if c in df.columns]]
+
+    csv_path = RESULTS_SIGNIF / "aggregate_report.csv"
+    df.to_csv(csv_path, index=False, float_format="%.6g")
+    print(f"\n[CSV] {csv_path}")
+
+    md_path = RESULTS_SIGNIF / "aggregate_report.md"
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write("# Aggregate Significance Report\n\n")
+        f.write("Primary inferential statistic: Mann-Whitney U with rank-biserial effect size.\n")
+        f.write("Complementary statistics: Levene (variance), Kolmogorov-Smirnov (distribution shape),\n")
+        f.write("Cohen's d (parametric effect size).\n\n")
+        f.write("## Compact view (effect sizes)\n\n")
+        compact = df[["metric", "comparison", "abs_r_rb", "rrb_effect",
+                      "abs_cohens_d", "cohen_effect", "p_levene", "p_ks"]]
+        f.write(compact.to_markdown(index=False, floatfmt=".4f"))
+        f.write("\n\n## Full table\n\n")
+        f.write(df.to_markdown(index=False, floatfmt=".4g"))
+        f.write("\n")
+    print(f"[MD]  {md_path}")
+
+    return df
+
+
+# ---------------------------------------------------------
+# Main
+# ---------------------------------------------------------
 if __name__ == "__main__":
-    run_all_stats()
+    quick = "--quick" in sys.argv
+
+    print("=== AGGREGATE SIGNIFICANCE REPORT ===\n")
+    if quick:
+        print("Modus: --quick (FWR untagged ohne Levene/KS)\n")
+    else:
+        print("Modus: voll (FWR untagged mit spaCy-Live-Lauf, ~5-8 min)\n")
+
+    records = aggregate(quick=quick)
+    df = write_outputs(records)
+
+    print("\n=== KOMPAKTE UEBERSICHT ===")
+    compact = df[["metric", "comparison", "abs_r_rb", "rrb_effect",
+                  "abs_cohens_d", "cohen_effect", "p_levene"]]
+    print(compact.to_string(index=False, float_format=lambda x: f"{x:.4f}"))

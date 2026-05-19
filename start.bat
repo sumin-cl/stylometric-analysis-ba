@@ -299,8 +299,8 @@ if /i "%choice%"=="L2" python src\03_analysis\03_shannon.py          llm    & go
 if /i "%choice%"=="L3" python src\03_analysis\03_ptd_syntax.py       llm    & goto done_analysis
 if /i "%choice%"=="L4" python src\03_analysis\03_fwr_ratio_tagged.py llm    & goto done_analysis
 if /i "%choice%"=="L5" python src\03_analysis\03_fwr_ratio.py        llm    & goto done_analysis
-if "%choice%"=="7"  python src\04_visualization\04_sign_all.py              & goto done_analysis
-if "%choice%"=="8"  python src\04_visualization\04_visualization.py         & goto done_analysis
+if "%choice%"=="7"  goto sigreport_menu
+if "%choice%"=="8"  goto viz_menu
 if /i "%choice%"=="B" goto menu
 
 echo Ungueltige Eingabe.
@@ -400,6 +400,44 @@ if /i "%sample%"=="all" (
     goto done_analysis
 )
 echo Ungueltige Eingabe. & goto fwr_tagged_menu
+
+:sigreport_menu
+cls
+echo  Signifikanz-Report aggregieren:
+echo  [F] Full        -- mit spaCy-Lauf fuer FWR untagged, ca. 5-8 min
+echo  [Q] Quick       -- ohne FWR-untagged-Levene/KS, ca. 1 min
+echo.
+echo  [B] Zurueck
+echo.
+set /p sigmode="Mode: "
+if /i "%sigmode%"=="B" goto analysis_menu
+if /i "%sigmode%"=="F" python src\04_visualization\04_sign_all.py            & goto done_analysis
+if /i "%sigmode%"=="Q" python src\04_visualization\04_sign_all.py --quick    & goto done_analysis
+echo Ungueltige Eingabe. & goto sigreport_menu
+
+:viz_menu
+cls
+echo  Visualisierungen --- Plot auswaehlen:
+echo  [all] Alle Plots
+echo  [1]   Effect Sizes  -- ^|r_rb^| pro Metrik, A-vs-B und B-vs-C
+echo  [2]   PTD           -- Violin der Baumtiefen
+echo  [3]   MTLD          -- Chunks raw vs vocab-aligned
+echo  [4]   Shannon       -- Per-post Entropie WORD + POS
+echo  [5]   FWR           -- Means untagged + tagged
+echo  [6]   Length        -- Token-Laengen nach Filter
+echo.
+echo  [B]   Zurueck
+echo.
+set /p plot="Plot: "
+if /i "%plot%"=="B"   goto analysis_menu
+if /i "%plot%"=="all" python src\04_visualization\04_visualization.py            & goto done_analysis
+if "%plot%"=="1"      python src\04_visualization\04_visualization.py effects   & goto done_analysis
+if "%plot%"=="2"      python src\04_visualization\04_visualization.py ptd       & goto done_analysis
+if "%plot%"=="3"      python src\04_visualization\04_visualization.py mtld      & goto done_analysis
+if "%plot%"=="4"      python src\04_visualization\04_visualization.py shannon   & goto done_analysis
+if "%plot%"=="5"      python src\04_visualization\04_visualization.py fwr       & goto done_analysis
+if "%plot%"=="6"      python src\04_visualization\04_visualization.py length    & goto done_analysis
+echo Ungueltige Eingabe. & goto viz_menu
 
 :done_analysis
 echo.
