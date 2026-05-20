@@ -108,10 +108,18 @@ def load_ptd(layer):
     return (a, b) if layer == "filtered" else (b, c)
 
 
-def compute_fwr_tagged_per_doc(corpus_letter):
-    """Korpus-Letter: 'a', 'b', oder 'c'. FWR tagged = Funktions-Tokens / Gesamt-Tokens."""
+def compute_fwr_tagged_pair(letter_1, letter_2):
+    """FWR tagged per-doc fuer ein Korpus-PAAR, mit Pipeline-identischem
+    Subsampling (min-Laenge, random_state=42).
+    FWR tagged = Funktions-Tokens / Gesamt-Tokens."""
     func_tags = {"PRON", "DET", "ADP", "CCONJ", "SCONJ", "PART"}
-    df = pd.read_csv(TAGGED_FILTERED / f"corpus_{corpus_letter}_filtered_tagged.csv")
+
+    df_1 = pd.read_csv(TAGGED_FILTERED / f"corpus_{letter_1}_filtered_tagged.csv")
+    df_2 = pd.read_csv(TAGGED_FILTERED / f"corpus_{letter_2}_filtered_tagged.csv")
+
+    min_len = min(len(df_1), len(df_2))
+    df_1 = df_1.sample(n=min_len, random_state=42)
+    df_2 = df_2.sample(n=min_len, random_state=42)
 
     def fwr_of(pos_string):
         tags = str(pos_string).split()
@@ -119,24 +127,42 @@ def compute_fwr_tagged_per_doc(corpus_letter):
             return 0.0
         return sum(1 for t in tags if t in func_tags) / len(tags)
 
-    return df["pos_tags"].apply(fwr_of).tolist()
+    return (df_1["pos_tags"].apply(fwr_of).tolist(),
+            df_2["pos_tags"].apply(fwr_of).tolist())
 
 
-def compute_fwr_untagged_per_doc(corpus_letter, nlp_model):
-    """FWR untagged = Funktions-Tokens / Inhalts-Tokens (analog calculate_fwr_per_doc)."""
+def compute_fwr_untagged_pair(letter_1, letter_2, nlp_model):
+    """Berechnet FWR untagged per-doc fuer ein Korpus-PAAR, mit identischem
+    Subsampling wie die Pipeline (min-Laenge, random_state=42). Gibt
+    (fwr_list_1, fwr_list_2) zurueck.
+
+    FWR untagged = Funktions-Tokens / Inhalts-Tokens (analog calculate_fwr_per_doc).
+    """
     from tqdm import tqdm
-    df = pd.read_csv(PROCESSED_FILTERED / f"corpus_{corpus_letter}_filtered.csv")
+
+    df_1 = pd.read_csv(PROCESSED_FILTERED / f"corpus_{letter_1}_filtered.csv")
+    df_2 = pd.read_csv(PROCESSED_FILTERED / f"corpus_{letter_2}_filtered.csv")
+
+    # Subsampling identisch zur Pipeline (03_fwr_ratio.py)
+    min_len = min(len(df_1), len(df_2))
+    df_1 = df_1.sample(n=min_len, random_state=42)
+    df_2 = df_2.sample(n=min_len, random_state=42)
 
     content_tags = {"NOUN", "VERB", "ADJ", "ADV", "PROPN"}
     func_tags    = {"ADP", "AUX", "CONJ", "CCONJ", "SCONJ", "DET", "PART", "PRON"}
 
-    ratios = []
-    for doc in tqdm(nlp_model.pipe(df["text"].astype(str), batch_size=100),
-                    total=len(df), desc=f"FWR untagged ({corpus_letter})"):
-        n_func = sum(1 for t in doc if t.pos_ in func_tags)
-        n_cont = sum(1 for t in doc if t.pos_ in content_tags)
-        ratios.append(n_func / n_cont if n_cont > 0 else 0.0)
-    return ratios
+    def fwr_per_doc(texts, desc):
+        ratios = []
+        for doc in tqdm(nlp_model.pipe(texts.astype(str), batch_size=100),
+                        total=len(texts), desc=desc):
+            n_func = sum(1 for t in doc if t.pos_ in func_tags)
+            n_cont = sum(1 for t in doc if t.pos_ in content_tags)
+            ratios.append(n_func / n_cont if n_cont > 0 else 0.0)
+        return ratios
+
+    fwr_1 = fwr_per_doc(df_1["text"], f"FWR untagged ({letter_1})")
+    fwr_2 = fwr_per_doc(df_2["text"], f"FWR untagged ({letter_2})")
+    return fwr_1, fwr_2
 
 
 # ---------------------------------------------------------
@@ -299,22 +325,21 @@ def aggregate(quick=False):
         b2, c,
     ))
 
-    # ── FWR tagged (per-doc aus TAGGED CSV) ──────────────
+    # ── FWR tagged (per-doc aus TAGGED CSV, Pipeline-Subsampling) ──
     print("[5/6] FWR tagged (aus TAGGED CSV)...")
-    fwr_t_a = compute_fwr_tagged_per_doc("a")
-    fwr_t_b = compute_fwr_tagged_per_doc("b")
-    fwr_t_c = compute_fwr_tagged_per_doc("c")
+    fwr_t_a, fwr_t_b_ab = compute_fwr_tagged_pair("a", "b")
+    fwr_t_b_bc, fwr_t_c = compute_fwr_tagged_pair("b", "c")
     records.append(build_record(
         "FWR tagged", "A vs B (filtered)",
         RESULTS_FWR_FILTERED / "fwr_results_tagged_filtered.json",
         ("mean_fwr_a", "mean_fwr_b"),
-        fwr_t_a, fwr_t_b,
+        fwr_t_a, fwr_t_b_ab,
     ))
     records.append(build_record(
         "FWR tagged", "B vs C (LLM)",
         RESULTS_FWR_LLM / "fwr_results_tagged_llm.json",
         ("mean_fwr_b", "mean_fwr_c"),
-        fwr_t_b, fwr_t_c,
+        fwr_t_b_bc, fwr_t_c,
     ))
 
     # ── FWR untagged (spaCy live oder quick mode) ────────
@@ -337,20 +362,20 @@ def aggregate(quick=False):
         import spacy
         print("  Lade spaCy...")
         nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
-        fwr_u_a = compute_fwr_untagged_per_doc("a", nlp)
-        fwr_u_b = compute_fwr_untagged_per_doc("b", nlp)
-        fwr_u_c = compute_fwr_untagged_per_doc("c", nlp)
+        # Jedes Paar separat subsamplen (B unterscheidet sich: vs A -> 8848, vs C -> 1196)
+        fwr_u_a, fwr_u_b_ab = compute_fwr_untagged_pair("a", "b", nlp)
+        fwr_u_b_bc, fwr_u_c = compute_fwr_untagged_pair("b", "c", nlp)
         records.append(build_record(
             "FWR untagged", "A vs B (filtered)",
             RESULTS_FWR_FILTERED / "fwr_results_filtered.json",
             ("mean_fwr_a", "mean_fwr_b"),
-            fwr_u_a, fwr_u_b,
+            fwr_u_a, fwr_u_b_ab,
         ))
         records.append(build_record(
             "FWR untagged", "B vs C (LLM)",
             RESULTS_FWR_LLM / "fwr_results_llm.json",
             ("mean_fwr_b", "mean_fwr_c"),
-            fwr_u_b, fwr_u_c,
+            fwr_u_b_bc, fwr_u_c,
         ))
 
     return records

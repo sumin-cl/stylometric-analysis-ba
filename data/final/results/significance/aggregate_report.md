@@ -16,10 +16,10 @@ Cohen's d (parametric effect size).
 | Shannon POS | B vs C (LLM) | 0.0538 | negligible | 0.2203 | small | 0.0000 | 0.0000 |
 | PTD | A vs B (filtered) | 0.0224 | negligible | 0.0482 | negligible | 0.0002 | 0.0205 |
 | PTD | B vs C (LLM) | 0.4640 | medium | 0.7341 | medium | 0.0000 | 0.0000 |
-| FWR tagged | A vs B (filtered) | 0.0943 | negligible | 0.1563 | negligible | 0.0000 | 0.0000 |
-| FWR tagged | B vs C (LLM) | 0.4565 | medium | 0.7589 | medium | 0.0000 | 0.0000 |
-| FWR untagged | A vs B (filtered) | 0.1181 | small | 0.2057 | small | — | — |
-| FWR untagged | B vs C (LLM) | 0.4301 | medium | 0.8386 | large | — | — |
+| FWR tagged | A vs B (filtered) | 0.0943 | negligible | 0.1550 | negligible | 0.0000 | 0.0000 |
+| FWR tagged | B vs C (LLM) | 0.4565 | medium | 0.9056 | large | 0.0000 | 0.0000 |
+| FWR untagged | A vs B (filtered) | 0.1181 | small | 0.2057 | small | 0.0022 | 0.0000 |
+| FWR untagged | B vs C (LLM) | 0.4301 | medium | 0.8383 | large | 0.0000 | 0.0000 |
 
 ## Full table
 
@@ -33,10 +33,10 @@ Cohen's d (parametric effect size).
 | Shannon POS | B vs C (LLM) | 1196 | 1196 | 3.556 | 3.514 | -0.04249 | 6.767e+05 | 0.02262 | 0.05384 | 0.05384 | negligible | 250.3 | 1.096e-53 | 0.1798 | 2.699e-17 | -0.2203 | 0.2203 | small |
 | PTD | A vs B (filtered) | 8848 | 8848 | 5.494 | 5.438 | -0.05593 | 4.002e+07 | 0.00996 | -0.02237 | 0.02237 | negligible | 14.19 | 0.000166 | 0.02204 | 0.02048 | 0.04821 | 0.04821 | negligible |
 | PTD | B vs C (LLM) | 1196 | 1196 | 5.423 | 4.602 | -0.8213 | 1.047e+06 | 5.83e-86 | -0.464 | 0.464 | medium | 234.6 | 1.991e-52 | 0.3676 | 5.179e-130 | 0.7341 | 0.7341 | medium |
-| FWR tagged | A vs B (filtered) | 8848 | 8848 | 0.3242 | 0.3149 | -0.009283 | 4.284e+07 | 1.7e-27 | -0.09431 | 0.09431 | negligible | 27.06 | 1.99e-07 | 0.07755 | 4.914e-25 | 0.1563 | 0.1563 | negligible |
-| FWR tagged | B vs C (LLM) | 1196 | 1196 | 0.3176 | 0.359 | 0.04142 | 3.887e+05 | 2.862e-83 | 0.4565 | 0.4565 | medium | 611.4 | 1.741e-131 | 0.4347 | 3.402e-184 | -0.7589 | 0.7589 | medium |
-| FWR untagged | A vs B (filtered) | 8848 | 8848 | 0.8473 | 0.7975 | -0.04986 | 4.377e+07 | 3.876e-42 | -0.1181 | 0.1181 | small | — | — | — | — | 0.2057 | 0.2057 | small |
-| FWR untagged | B vs C (LLM) | 1196 | 1196 | 0.8144 | 0.9771 | 0.1628 | 4.076e+05 | 4.179e-74 | 0.4301 | 0.4301 | medium | — | — | — | — | -0.8386 | 0.8386 | large |
+| FWR tagged | A vs B (filtered) | 8848 | 8848 | 0.3242 | 0.3149 | -0.009283 | 4.284e+07 | 1.7e-27 | -0.09431 | 0.09431 | negligible | 25.72 | 3.979e-07 | 0.07889 | 2.31e-24 | 0.155 | 0.155 | negligible |
+| FWR tagged | B vs C (LLM) | 1196 | 1196 | 0.3176 | 0.359 | 0.04142 | 3.887e+05 | 2.862e-83 | 0.4565 | 0.4565 | medium | 503.3 | 2.599e-101 | 0.4256 | 1.578e-97 | -0.9056 | 0.9056 | large |
+| FWR untagged | A vs B (filtered) | 8848 | 8848 | 0.8473 | 0.7975 | -0.04986 | 4.377e+07 | 3.876e-42 | -0.1181 | 0.1181 | small | 9.348 | 0.002236 | 0.08736 | 8.634e-30 | 0.2057 | 0.2057 | small |
+| FWR untagged | B vs C (LLM) | 1196 | 1196 | 0.8144 | 0.9771 | 0.1628 | 4.076e+05 | 4.179e-74 | 0.4301 | 0.4301 | medium | 540 | 7.072e-108 | 0.4298 | 1.637e-99 | -0.8383 | 0.8383 | large |
 
 ## Vocabulary-alignment diagnostics
 
