@@ -109,6 +109,7 @@ def analyze_entropy(mode="WORD"):
     res_global = {
         "entropy_a": float(entropy_a),
         "entropy_b": float(entropy_b),
+        "entropy_b_filtered": float(entropy_b_filt),
         "diff_entropy_raw": float(diff_raw),
         "diff_entropy_filtered": float(diff_filt),
         **mwu,
@@ -183,6 +184,7 @@ def analyze_entropy_downsampled(mode="WORD", sample_num=1):
     res_global = {
         "entropy_a": float(entropy_a),
         "entropy_b": float(entropy_b),
+        "entropy_b_filtered": float(entropy_b_filt),
         "diff_entropy_raw": float(diff_raw),
         "diff_entropy_filtered": float(diff_filt),
         **mwu,
@@ -259,6 +261,7 @@ def analyze_entropy_filtered(mode="WORD"):
     res_global = {
         "entropy_a": float(entropy_a),
         "entropy_b": float(entropy_b),
+        "entropy_b_filtered": float(entropy_b_filt),
         "diff_entropy_raw": float(diff_raw),
         "diff_entropy_filtered": float(diff_filt),
         **mwu,
@@ -336,6 +339,7 @@ def analyze_entropy_llm(mode="WORD"):
     res_global = {
         "entropy_b": float(entropy_b),
         "entropy_c": float(entropy_c),
+        "entropy_c_filtered_on_b": float(entropy_c_filt),
         "diff_entropy_raw": float(diff_raw),
         "diff_entropy_filtered": float(diff_filt),
         **mwu,

@@ -1,5 +1,5 @@
 {
-    "timestamp": "2026-05-15T17:46:07.476867",
+    "timestamp": "2026-05-20T12:32:52.530362",
     "metadata": {
         "sample_size": 1196,
         "mode": "POS",
@@ -14,6 +14,7 @@
     "results": {
         "entropy_b": 3.556208168260723,
         "entropy_c": 3.5137138598890774,
+        "entropy_c_filtered_on_b": 3.5137138598890774,
         "diff_entropy_raw": -0.042494308371645584,
         "diff_entropy_filtered": -0.042494308371645584,
         "mann_whitney_u": 676704.0,

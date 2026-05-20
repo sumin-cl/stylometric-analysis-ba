@@ -359,7 +359,66 @@ def aggregate(quick=False):
 # ---------------------------------------------------------
 # Output
 # ---------------------------------------------------------
-def write_outputs(records):
+def _df_to_md(df, float_fmt=".4g"):
+    """Schlanker Markdown-Writer, kein tabulate-Dependency."""
+    def fmt(v):
+        if isinstance(v, float):
+            return f"{v:{float_fmt}}" if not np.isnan(v) else "—"
+        return str(v) if v is not None else "—"
+
+    header = "| " + " | ".join(df.columns) + " |"
+    sep    = "| " + " | ".join(["---"] * len(df.columns)) + " |"
+    rows   = ["| " + " | ".join(fmt(v) for v in row) + " |" for row in df.itertuples(index=False)]
+    return "\n".join([header, sep] + rows)
+
+
+def collect_alignment_diagnostics():
+    """Sammelt die Vocabulary-Alignment-Werte (Topic-Drift-Diagnose) aus den
+    MTLD- und Shannon-Alignment-JSONs. Diese stehen NICHT in den Haupt-
+    Effektgroessen-Records, da sie ein deskriptives Diagnose-Werkzeug sind,
+    kein Effektgroessen-Mass."""
+    rows = []
+
+    # --- MTLD: absolute aligned-Werte vorhanden ---
+    m_f = _load_json(RESULTS_MTLD_FILTERED / "mtld_alignment_filtered.json")["results"]
+    rows.append({
+        "metric": "MTLD", "comparison": "A vs B (filtered)",
+        "raw_ref": m_f["mtld_a_standard"], "raw_other": m_f["mtld_b_standard"],
+        "other_aligned": m_f["mtld_b_filtered"],
+        "diff_aligned": m_f["diff_mtld_filtered"],
+    })
+    m_l = _load_json(RESULTS_MTLD_LLM / "mtld_alignment_llm.json")["results"]
+    rows.append({
+        "metric": "MTLD", "comparison": "B vs C (LLM)",
+        "raw_ref": m_l["mtld_b_standard"], "raw_other": m_l["mtld_c_standard"],
+        "other_aligned": m_l["mtld_c_filtered_on_b"],
+        "diff_aligned": m_l["diff_mtld_filtered"],
+    })
+
+    # --- Shannon WORD: nur diff gespeichert -> aligned-Wert rekonstruieren ---
+    for layer, comp, fname, ref_key, other_key in [
+        ("filtered", "A vs B (filtered)", "entropy_word_filtered.json", "entropy_a", "entropy_b"),
+        ("llm",      "B vs C (LLM)",      "entropy_word_llm.json",      "entropy_b", "entropy_c"),
+    ]:
+        base = RESULTS_SHANNON_FILTERED if layer == "filtered" else RESULTS_SHANNON_LLM
+        s = _load_json(base / fname)["results"]
+        ref = s[ref_key]
+        other = s[other_key]
+        diff_filt = s["diff_entropy_filtered"]
+        # Echten absoluten aligned-Wert nutzen, falls vorhanden; sonst rekonstruieren
+        aligned_key = "entropy_b_filtered" if layer == "filtered" else "entropy_c_filtered_on_b"
+        aligned = s.get(aligned_key, ref + diff_filt)
+        rows.append({
+            "metric": "Shannon WORD", "comparison": comp,
+            "raw_ref": ref, "raw_other": other,
+            "other_aligned": aligned,
+            "diff_aligned": diff_filt,
+        })
+
+    return rows
+
+
+def write_outputs(records, alignment_rows=None):
     df = pd.DataFrame(records)
 
     # Spalten-Reihenfolge fuer Lesbarkeit
@@ -377,19 +436,40 @@ def write_outputs(records):
     df.to_csv(csv_path, index=False, float_format="%.6g")
     print(f"\n[CSV] {csv_path}")
 
+    if alignment_rows:
+        adf = pd.DataFrame(alignment_rows)[
+            ["metric", "comparison", "raw_ref", "raw_other", "other_aligned", "diff_aligned"]
+        ]
+        align_csv = RESULTS_SIGNIF / "alignment_diagnostics.csv"
+        adf.to_csv(align_csv, index=False, float_format="%.6g")
+        print(f"[CSV] {align_csv}")
+
     md_path = RESULTS_SIGNIF / "aggregate_report.md"
+    compact = df[["metric", "comparison", "abs_r_rb", "rrb_effect",
+                  "abs_cohens_d", "cohen_effect", "p_levene", "p_ks"]]
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("# Aggregate Significance Report\n\n")
         f.write("Primary inferential statistic: Mann-Whitney U with rank-biserial effect size.\n")
         f.write("Complementary statistics: Levene (variance), Kolmogorov-Smirnov (distribution shape),\n")
         f.write("Cohen's d (parametric effect size).\n\n")
         f.write("## Compact view (effect sizes)\n\n")
-        compact = df[["metric", "comparison", "abs_r_rb", "rrb_effect",
-                      "abs_cohens_d", "cohen_effect", "p_levene", "p_ks"]]
-        f.write(compact.to_markdown(index=False, floatfmt=".4f"))
+        f.write(_df_to_md(compact, float_fmt=".4f"))
         f.write("\n\n## Full table\n\n")
-        f.write(df.to_markdown(index=False, floatfmt=".4g"))
+        f.write(_df_to_md(df, float_fmt=".4g"))
         f.write("\n")
+
+        if alignment_rows:
+            adf = pd.DataFrame(alignment_rows)[
+                ["metric", "comparison", "raw_ref", "raw_other", "other_aligned", "diff_aligned"]
+            ]
+            f.write("\n## Vocabulary-alignment diagnostics\n\n")
+            f.write("One-sided vocabulary alignment (diagnostic, not an effect-size measure). ")
+            f.write("`raw_ref` = reference corpus raw value; `raw_other` = comparison corpus raw value; ")
+            f.write("`other_aligned` = comparison corpus restricted to reference vocabulary (min_freq>=3 for WORD). ")
+            f.write("A near-zero or negative `diff_aligned` indicates the raw difference is driven by ")
+            f.write("vocabulary novelty (topic shift) rather than by distributional structure.\n\n")
+            f.write(_df_to_md(adf, float_fmt=".4g"))
+            f.write("\n")
     print(f"[MD]  {md_path}")
 
     return df
@@ -408,7 +488,8 @@ if __name__ == "__main__":
         print("Modus: voll (FWR untagged mit spaCy-Live-Lauf, ~5-8 min)\n")
 
     records = aggregate(quick=quick)
-    df = write_outputs(records)
+    alignment_rows = collect_alignment_diagnostics()
+    df = write_outputs(records, alignment_rows=alignment_rows)
 
     print("\n=== KOMPAKTE UEBERSICHT ===")
     compact = df[["metric", "comparison", "abs_r_rb", "rrb_effect",
