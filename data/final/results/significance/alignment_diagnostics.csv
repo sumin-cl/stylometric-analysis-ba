@@ -1,0 +1,5 @@
+metric,comparison,raw_ref,raw_other,other_aligned,diff_aligned
+MTLD,A vs B (filtered),122.833,150.58,122.841,0.00775491
+MTLD,B vs C (LLM),151.609,204.735,138.361,-13.2482
+Shannon WORD,A vs B (filtered),10.8312,11.0363,10.2898,-0.54143
+Shannon WORD,B vs C (LLM),10.7991,10.0404,9.0793,-1.71984
