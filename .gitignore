@@ -17,3 +17,6 @@ data/final/*
 !data/final/02_eda
 
 !data/final/results/**/*.csv
+
+!data/final/04_parsed
+!data/final/04_parsed/**
