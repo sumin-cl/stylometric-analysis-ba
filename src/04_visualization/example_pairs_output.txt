@@ -1,0 +1,53 @@
+(venv) PS C:\Users\smcho\Documents\Projects\stylometric-analysis-ba\src> python -m 04_visualization.05_example_pairs
+Lade spaCy (fuer FWR)...
+Lade Korpus B...
+Lade Korpus C...
+
+=== B (Post-2022 Reddit) (n=10029) — Korpus-Mediane ===
+  ptd         : median=5.333  mean=5.436
+  fwr         : median=0.811  mean=0.798
+
+=== C (gpt-4o) (n=1196) — Korpus-Mediane ===
+  ptd         : median=4.538  mean=4.602
+  fwr         : median=0.967  mean=0.977
+
+Gemeinsames Laengenfenster fuer faire Paarung: 147-226 Tokens
+
+--- B (Post-2022 Reddit): 3 typischste Kandidaten ---
+
+[B (Post-2022 Reddit) #1]  token_len=178
+    ptd          = 5.500
+    fwr          = 0.782
+    text: I’m interested in large language models, so I decided to build a pretraining pipeline, and was wondering what I should add to it before I start my run. I’m trying to pretrain a GPT 2 Small(or maybe medium) sized model on an 11b token dataset with web text and code. I made some tweaks to the model architecture, adding Flash Attention, RMSNorm, SwiGLU, and RoPE. I linearly warmup the batch size from...
+
+[B (Post-2022 Reddit) #2]  token_len=181
+    ptd          = 5.455
+    fwr          = 0.779
+    text: I'm currently working on a PPE (Personal Protective Equipment) detection project using the AWS API. While the API works seamlessly with images, the challenge arises when dealing with videos. Scanning every frame not only proves to be highly inefficient but also escalates costs significantly. Here's where I could use your expertise. We've already implemented the AWS tracking API, providing us with ...
+
+[B (Post-2022 Reddit) #3]  token_len=170
+    ptd          = 5.429
+    fwr          = 0.784
+    text: I wrote a guide on how to choose the right type of cloud infrastructure if you're building on top of diffusion models: Caveat that Modal is a serverless compute platform! But this post covers when you might choose between API platforms (replicate, fal), traditional cloud (AWS EC2), managed ML platforms (SageMaker, Vertex), and serverless cloud. I often see companies jump to self deployment even if...
+
+--- C (gpt-4o): 3 typischste Kandidaten ---
+
+[C (gpt-4o) #1]  token_len=189
+    ptd          = 4.692
+    fwr          = 0.990
+    text: Hey everyone! I wanted to share some thoughts from my latest work on a project that’s been quite a rollercoaster. So, we're developing a new app, and as with any project, the challenges tend to pop up when you least expect them. First off, dealing with the environment setup was a bit of a headache. We had to ensure all team members were on the same page since any deviation could lead to compatibil...
+
+[C (gpt-4o) #2]  token_len=159
+    ptd          = 4.667
+    fwr          = 0.988
+    text: Hey everyone, I just wanted to share a few thoughts on the rollercoaster that is being a researcher in the world of code development and model training. 🔄 First off, hats off to anyone who's been deep into coding lately. It's rewarding, but man, it can really stretch your patience. I hit a wall last week trying to debug what turned out to be a missing semicolon. 😅 It's funny how such a tiny sign c...
+
+[C (gpt-4o) #3]  token_len=172
+    ptd          = 4.667
+    fwr          = 1.000
+    text: Hey everyone, So I've been diving into a new project recently, and I thought I'd share some of the challenges and insights I've encountered along the way. If you’re dealing with machine learning models like I am, you’ve probably heard of ONNX. It's a super handy format for model interoperability, but getting everything set up right can be a bit of a puzzle. Coming from a software engineering backg...
+
+============================================================
+Waehle je einen Post aus den Kandidaten manuell aus.
+Empfehlung: aehnliche token_len, klarer PTD/FWR-Kontrast,
+inhaltlich unverfaenglich (kein PII, kein sensibler Inhalt).
